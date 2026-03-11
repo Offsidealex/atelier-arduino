@@ -154,22 +154,24 @@ body::before {
 
 /* ── PAGES ── */
 .page { display: none; padding: 20px 24px; position: relative; z-index: 1; }
-.page.active {
-  display: flex;
-  gap: 20px;
-  height: calc(100vh - 116px);
-  overflow: visible;
-}
-#page-home.active {
+.page.active { display: flex; gap: 20px; }
+#page-home.active { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: calc(100vh - 116px); }
+
+/* ── LAYOUT MODULE ── */
+.panel-left {
+  width: 280px;
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: calc(100vh - 116px);
-  overflow: auto;
+  gap: 14px;
 }
-
-/* ── HOME ── */
+.panel-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
 .home-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -233,29 +235,7 @@ body::before {
   opacity: 0.7;
 }
 
-/* ── LAYOUT MODULE ── */
-.panel-left {
-  width: 280px;
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  height: calc(100vh - 156px); /* 116px header/nav + 40px padding */
-  overflow-y: auto;
-  overflow-x: hidden;
-}
-.panel-left::-webkit-scrollbar { width: 5px; }
-.panel-left::-webkit-scrollbar-track { background: transparent; }
-.panel-left::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-.panel-right {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  overflow: hidden;
-  min-width: 0;
-  height: calc(100vh - 156px);
-}
+/* ── HOME ── */
 
 /* ── WIDGETS ── */
 .widget {
@@ -437,10 +417,10 @@ table.data-table tr:last-child td { color: var(--green); }
   border: 1px solid var(--border);
   border-radius: 3px;
   padding: 12px;
+  height: 420px;
 }
 .chart-container.mar-side {
   flex: 1;
-  height: calc(100vh - 220px);
 }
 
 /* ── STATS ROW ── */
@@ -770,13 +750,13 @@ table.data-table tr:last-child td { color: var(--green); }
     </div>
 
     <!-- Onglet Graphiques -->
-    <div id="mar-panel-graph" style="display:flex;flex-direction:row;flex:1;gap:14px;padding-top:14px;min-height:0;overflow:hidden">
+    <div id="mar-panel-graph" style="display:flex;flex-direction:row;gap:14px;padding-top:14px;height:460px">
       <div class="chart-container mar-side">
-        <div style="font-family:var(--mono);font-size:0.68rem;color:var(--blue);letter-spacing:1px;margin-bottom:8px">P = f(V) — HYPERBOLE</div>
+        <div style="font-family:var(--mono);font-size:0.68rem;color:var(--blue);letter-spacing:1px;margin-bottom:6px">P = f(V) — HYPERBOLE</div>
         <canvas id="mar-chart1"></canvas>
       </div>
       <div class="chart-container mar-side">
-        <div style="font-family:var(--mono);font-size:0.68rem;color:var(--green);letter-spacing:1px;margin-bottom:8px">P = f(1/V) — VÉRIFICATION LINÉARITÉ</div>
+        <div style="font-family:var(--mono);font-size:0.68rem;color:var(--green);letter-spacing:1px;margin-bottom:6px">P = f(1/V) — VÉRIFICATION LINÉARITÉ</div>
         <canvas id="mar-chart2"></canvas>
       </div>
     </div>
@@ -1792,16 +1772,14 @@ window.addEventListener('load', () => {
 window.addEventListener('resize', resizeMariotteCharts);
 
 function resizeMariotteCharts() {
-  const h = Math.floor(window.innerHeight - 220);
-  const c1 = document.getElementById('mar-chart1');
-  const c2 = document.getElementById('mar-chart2');
-  const w  = Math.floor((document.getElementById('mar-panel-graph').offsetWidth - 28) / 2);
-  if (w > 100) {
-    c1.width  = w;  c1.height  = h;
-    c2.width  = w;  c2.height  = h;
-    marChart1.resize(w, h);
-    marChart2.resize(w, h);
-  }
+  const panel = document.getElementById('mar-panel-graph');
+  if (!panel || panel.style.display === 'none') return;
+  const totalW = panel.offsetWidth;
+  if (totalW < 100) return;
+  const w = Math.floor((totalW - 14) / 2);
+  const h = 420;
+  marChart1.resize(w, h);
+  marChart2.resize(w, h);
 }
 </script>
 </body>
