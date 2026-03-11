@@ -417,7 +417,7 @@ table.data-table tr:last-child td { color: var(--green); }
   border: 1px solid var(--border);
   border-radius: 3px;
   padding: 12px;
-  height: 420px;
+  height: 750px;
 }
 .chart-container.mar-side {
   flex: 1;
@@ -750,7 +750,7 @@ table.data-table tr:last-child td { color: var(--green); }
     </div>
 
     <!-- Onglet Graphiques -->
-    <div id="mar-panel-graph" style="display:flex;flex-direction:row;gap:14px;padding-top:14px;height:460px">
+    <div id="mar-panel-graph" style="display:flex;flex-direction:row;gap:14px;padding-top:14px;height:770px">
       <div class="chart-container mar-side">
         <div style="font-family:var(--mono);font-size:0.68rem;color:var(--blue);letter-spacing:1px;margin-bottom:6px">P = f(V) — HYPERBOLE</div>
         <canvas id="mar-chart1"></canvas>
@@ -1777,7 +1777,7 @@ function resizeMariotteCharts() {
   const totalW = panel.offsetWidth;
   if (totalW < 100) return;
   const w = Math.floor((totalW - 14) / 2);
-  const h = 420;
+  const h = 750;
   marChart1.resize(w, h);
   marChart2.resize(w, h);
 }
