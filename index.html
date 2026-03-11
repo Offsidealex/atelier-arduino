@@ -450,7 +450,152 @@ table.data-table tr:last-child td { color: var(--green); }
   margin-top: 2px;
 }
 
-/* ── CALIB STATUS ── */
+/* ── TABLEUR STYLE EXCEL ── */
+.xl-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid #4a5568;
+  border-radius: 3px;
+  overflow: hidden;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  font-size: 0.82rem;
+}
+.xl-formulabar {
+  display: flex;
+  align-items: center;
+  background: #1e2736;
+  border-bottom: 1px solid #4a5568;
+  padding: 3px 6px;
+  gap: 6px;
+}
+.xl-cellref {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: #90a4ae;
+  background: #0d1117;
+  border: 1px solid #4a5568;
+  padding: 2px 8px;
+  min-width: 48px;
+  text-align: center;
+  border-radius: 2px;
+}
+.xl-fx {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: #546e7a;
+  padding: 0 6px;
+  border-right: 1px solid #4a5568;
+  font-style: italic;
+}
+.xl-formulaval {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  color: #cfd8dc;
+  flex: 1;
+}
+.xl-scroll {
+  overflow: auto;
+  max-height: 650px;
+}
+.xl-scroll::-webkit-scrollbar { width: 10px; height: 10px; }
+.xl-scroll::-webkit-scrollbar-track { background: #1e2736; }
+.xl-scroll::-webkit-scrollbar-thumb { background: #4a5568; border-radius: 2px; }
+.xl-table {
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: fixed;
+}
+/* Coin vide en haut gauche */
+.xl-table .xl-corner {
+  background: #2d3748;
+  width: 42px;
+  min-width: 42px;
+  border-right: 1px solid #4a5568;
+  border-bottom: 2px solid #4a5568;
+  position: sticky;
+  top: 0;
+  left: 0;
+  z-index: 4;
+}
+/* En-têtes de colonnes (A, B, C...) */
+.xl-table .xl-col-head {
+  background: #2d3748;
+  color: #90a4ae;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-align: center;
+  padding: 5px 4px;
+  border-right: 1px solid #4a5568;
+  border-bottom: 2px solid #4a5568;
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  user-select: none;
+  cursor: pointer;
+}
+.xl-table .xl-col-head:hover { background: #3a4a5e; color: #e2e8f0; }
+.xl-table .xl-col-head.sorted { background: #1a3a5c; color: #40c4ff; }
+/* Numéros de lignes */
+.xl-table .xl-row-num {
+  background: #2d3748;
+  color: #90a4ae;
+  font-size: 0.72rem;
+  text-align: center;
+  padding: 0 6px;
+  border-right: 1px solid #4a5568;
+  border-bottom: 1px solid #2d3748;
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  min-width: 42px;
+  width: 42px;
+  user-select: none;
+}
+/* Cellules de données */
+.xl-table .xl-cell {
+  padding: 4px 8px;
+  border-right: 1px solid #2d3748;
+  border-bottom: 1px solid #2d3748;
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: cell;
+  background: #0d1117;
+  color: #cfd8dc;
+  min-width: 80px;
+  height: 24px;
+  line-height: 16px;
+}
+.xl-table .xl-cell:hover { background: #1a2535; }
+.xl-table .xl-cell.selected {
+  background: #0a2a4a !important;
+  outline: 2px solid #1565c0;
+  outline-offset: -2px;
+}
+.xl-table .xl-cell.editing { padding: 0; }
+.xl-table .xl-cell input {
+  width: 100%;
+  height: 100%;
+  background: #fff;
+  color: #000;
+  border: 2px solid #1976d2;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  font-size: 0.82rem;
+  padding: 2px 6px;
+  text-align: right;
+  outline: none;
+  box-sizing: border-box;
+}
+/* Colonnes colorées selon le module */
+.xl-cell.col-a { color: #90caf9; }
+.xl-cell.col-b { color: #ef9a9a; }
+.xl-cell.col-c { color: #a5d6a7; }
+.xl-cell.col-d { color: #ffcc80; }
+.xl-cell.col-calc { color: #ffcc80; font-style: italic; }
+.xl-row-num.row-selected { background: #1a3a5c; color: #90caf9; }
 .calib-badge {
   display: inline-block;
   padding: 3px 10px;
@@ -697,11 +842,66 @@ canvas.knob-canvas { cursor: pointer; display: block; }
 
   <!-- DROITE -->
   <div class="panel-right">
-    <div class="chart-container" style="height:750px">
-      <canvas id="ph-chart"></canvas>
+    <!-- Barre d'onglets -->
+    <div style="display:flex;gap:0;border-bottom:1px solid var(--border)">
+      <button id="ph-tab-graph" onclick="phShowTab('graph')"
+        style="font-family:var(--sans);font-weight:600;font-size:0.85rem;letter-spacing:1.5px;text-transform:uppercase;
+               padding:10px 24px;border:none;background:transparent;color:var(--red);cursor:pointer;border-bottom:3px solid var(--red);">
+        📊 GRAPHIQUE
+      </button>
+      <button id="ph-tab-sheet" onclick="phShowTab('sheet')"
+        style="font-family:var(--sans);font-weight:600;font-size:0.85rem;letter-spacing:1.5px;text-transform:uppercase;
+               padding:10px 24px;border:none;background:transparent;color:var(--text-dim);cursor:pointer;border-bottom:3px solid transparent;">
+        📋 TABLEUR
+      </button>
     </div>
-    <!-- Table données -->
-    <div class="widget">
+
+    <!-- Onglet Graphique -->
+    <div id="ph-panel-graph">
+      <div class="chart-container" style="height:750px">
+        <canvas id="ph-chart"></canvas>
+      </div>
+    </div>
+
+    <!-- Onglet Tableur -->
+    <div id="ph-panel-sheet" style="display:none;flex-direction:column;gap:10px;padding-top:14px">
+      <div class="xl-wrap">
+        <div class="xl-formulabar">
+          <span class="xl-cellref" id="ph-xl-ref">A1</span>
+          <span class="xl-fx">fx</span>
+          <span class="xl-formulaval" id="ph-xl-fval"></span>
+        </div>
+        <div style="display:flex;gap:6px;background:#1e2736;border-bottom:1px solid #4a5568;padding:4px 6px">
+          <button class="btn btn-red"  onclick="phDeleteRow()" style="margin:0;padding:4px 12px;font-size:0.72rem">🗑 Supprimer ligne</button>
+          <button class="btn btn-blue" onclick="phFillDown()"  style="margin:0;padding:4px 12px;font-size:0.72rem">⬇ Remplir ↓</button>
+          <span style="font-family:var(--mono);font-size:0.68rem;color:#546e7a;align-self:center;margin-left:8px">
+            Double-clic pour éditer · <span style="color:#ffcc80">=A1*B1</span> (A=Vol, B=pH)
+          </span>
+        </div>
+        <div class="xl-scroll">
+          <table class="xl-table" id="ph-xl-table">
+            <thead>
+              <tr>
+                <th class="xl-corner"></th>
+                <th class="xl-col-head" onclick="phSortSheet('vol')" id="ph-xlh-a">A</th>
+                <th class="xl-col-head" onclick="phSortSheet('ph')"  id="ph-xlh-b">B</th>
+                <th class="xl-col-head" id="ph-xlh-c">C</th>
+              </tr>
+              <tr>
+                <th class="xl-corner" style="border-bottom:1px solid #4a5568"></th>
+                <th class="xl-col-head" style="font-size:0.65rem;color:#546e7a;font-weight:normal;background:#252f3e;border-bottom:1px solid #4a5568">Volume (mL)</th>
+                <th class="xl-col-head" style="font-size:0.65rem;color:#546e7a;font-weight:normal;background:#252f3e;border-bottom:1px solid #4a5568">pH</th>
+                <th class="xl-col-head" style="font-size:0.65rem;color:#546e7a;font-weight:normal;background:#252f3e;border-bottom:1px solid #4a5568">Calcul</th>
+              </tr>
+            </thead>
+            <tbody id="ph-sheet-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table données (toujours visible) -->
+    <div class="widget" id="ph-data-widget">
       <div class="widget-header">📋 Données</div>
       <div class="widget-body">
         <div class="data-table-wrap">
@@ -816,33 +1016,42 @@ canvas.knob-canvas { cursor: pointer; display: block; }
     </div>
 
     <!-- Onglet Tableur -->
-    <div id="mar-panel-sheet" style="display:none;flex-direction:column;flex:1;gap:10px;padding-top:14px">
-      <!-- Aide formules -->
-      <div style="font-family:var(--mono);font-size:0.7rem;color:var(--text-dim);padding:8px 12px;
-                  background:var(--bg2);border:1px solid var(--border);line-height:1.8">
-        <span style="color:var(--amber)">Colonne Calcul</span> : cliquez sur une cellule pour entrer une valeur ou une formule.
-        Exemple : <span style="color:var(--green)"><b>=A1*B1</b></span> (A = Volume, B = Pression, chiffre = n° de ligne).
-        <span style="color:var(--blue)">"Remplir ↓"</span> applique la formule de la ligne 1 à toutes les lignes.
-        Cliquez sur un <span style="color:var(--text-dim)">en-tête de colonne</span> pour trier.
-      </div>
-      <!-- Boutons tableur -->
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-red"  onclick="marDeleteRow()" style="flex:1;margin-bottom:0">🗑 SUPPRIMER LIGNE</button>
-        <button class="btn btn-blue" onclick="marFillDown()"  style="flex:1;margin-bottom:0">⬇ REMPLIR ↓</button>
-      </div>
-      <!-- Table -->
-      <div style="flex:1;overflow-y:auto;background:var(--bg2);border:1px solid var(--border)">
-        <table id="mar-sheet-table" style="width:100%;border-collapse:collapse;font-family:var(--mono);font-size:0.8rem">
-          <thead>
-            <tr style="background:var(--bg3);position:sticky;top:0;z-index:2">
-              <th onclick="marSortSheet('num')"    style="padding:9px 12px;color:var(--text-dim);font-weight:normal;letter-spacing:1px;cursor:pointer;border-bottom:1px solid var(--border);text-align:center;user-select:none" title="Trier">N° ↕</th>
-              <th onclick="marSortSheet('volume')" style="padding:9px 12px;color:var(--blue);font-weight:600;letter-spacing:1px;cursor:pointer;border-bottom:1px solid var(--border);text-align:center;user-select:none" title="Trier">A — Volume (cm³) ↕</th>
-              <th onclick="marSortSheet('pres')"   style="padding:9px 12px;color:var(--green);font-weight:600;letter-spacing:1px;cursor:pointer;border-bottom:1px solid var(--border);text-align:center;user-select:none" title="Trier">B — Pression (kPa) ↕</th>
-              <th style="padding:9px 12px;color:var(--amber);font-weight:600;letter-spacing:1px;border-bottom:1px solid var(--border);text-align:center">C — Calcul</th>
-            </tr>
-          </thead>
-          <tbody id="mar-sheet-body"></tbody>
-        </table>
+    <div id="mar-panel-sheet" style="display:none;flex-direction:column;gap:10px;padding-top:14px">
+      <!-- Barre de formule -->
+      <div class="xl-wrap">
+        <div class="xl-formulabar">
+          <span class="xl-cellref" id="mar-xl-ref">A1</span>
+          <span class="xl-fx">fx</span>
+          <span class="xl-formulaval" id="mar-xl-fval"></span>
+        </div>
+        <!-- Boutons -->
+        <div style="display:flex;gap:0;background:#1e2736;border-bottom:1px solid #4a5568;padding:4px 6px;gap:6px">
+          <button class="btn btn-red"  onclick="marDeleteRow()" style="margin:0;padding:4px 12px;font-size:0.72rem">🗑 Supprimer ligne</button>
+          <button class="btn btn-blue" onclick="marFillDown()"  style="margin:0;padding:4px 12px;font-size:0.72rem">⬇ Remplir ↓</button>
+          <span style="font-family:var(--mono);font-size:0.68rem;color:#546e7a;align-self:center;margin-left:8px">
+            Double-clic pour éditer · <span style="color:#ffcc80">=A1*B1</span> pour une formule (A=Vol, B=Pres)
+          </span>
+        </div>
+        <!-- Table -->
+        <div class="xl-scroll">
+          <table class="xl-table" id="mar-xl-table">
+            <thead>
+              <tr>
+                <th class="xl-corner"></th>
+                <th class="xl-col-head" onclick="marSortSheet('volume')" id="mar-xlh-a">A</th>
+                <th class="xl-col-head" onclick="marSortSheet('pres')"   id="mar-xlh-b">B</th>
+                <th class="xl-col-head" id="mar-xlh-c">C</th>
+              </tr>
+              <tr>
+                <th class="xl-corner" style="font-size:0.6rem;color:#546e7a;border-bottom:1px solid #4a5568"></th>
+                <th class="xl-col-head" style="font-size:0.65rem;color:#546e7a;font-weight:normal;background:#252f3e;border-bottom:1px solid #4a5568">Volume (cm³)</th>
+                <th class="xl-col-head" style="font-size:0.65rem;color:#546e7a;font-weight:normal;background:#252f3e;border-bottom:1px solid #4a5568">Pression (kPa)</th>
+                <th class="xl-col-head" style="font-size:0.65rem;color:#546e7a;font-weight:normal;background:#252f3e;border-bottom:1px solid #4a5568">Calcul</th>
+              </tr>
+            </thead>
+            <tbody id="mar-sheet-body"></tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
@@ -915,10 +1124,68 @@ canvas.knob-canvas { cursor: pointer; display: block; }
   </div>
 
   <div class="panel-right">
-    <div class="chart-container" style="height:750px">
-      <canvas id="temp-chart"></canvas>
+    <!-- Barre d'onglets -->
+    <div style="display:flex;gap:0;border-bottom:1px solid var(--border)">
+      <button id="temp-tab-graph" onclick="tempShowTab('graph')"
+        style="font-family:var(--sans);font-weight:600;font-size:0.85rem;letter-spacing:1.5px;text-transform:uppercase;
+               padding:10px 24px;border:none;background:transparent;color:var(--amber);cursor:pointer;border-bottom:3px solid var(--amber);">
+        📊 GRAPHIQUE
+      </button>
+      <button id="temp-tab-sheet" onclick="tempShowTab('sheet')"
+        style="font-family:var(--sans);font-weight:600;font-size:0.85rem;letter-spacing:1.5px;text-transform:uppercase;
+               padding:10px 24px;border:none;background:transparent;color:var(--text-dim);cursor:pointer;border-bottom:3px solid transparent;">
+        📋 TABLEUR
+      </button>
     </div>
-    <div class="widget">
+
+    <!-- Onglet Graphique -->
+    <div id="temp-panel-graph">
+      <div class="chart-container" style="height:750px">
+        <canvas id="temp-chart"></canvas>
+      </div>
+    </div>
+
+    <!-- Onglet Tableur -->
+    <div id="temp-panel-sheet" style="display:none;flex-direction:column;gap:10px;padding-top:14px">
+      <div class="xl-wrap">
+        <div class="xl-formulabar">
+          <span class="xl-cellref" id="temp-xl-ref">A1</span>
+          <span class="xl-fx">fx</span>
+          <span class="xl-formulaval" id="temp-xl-fval"></span>
+        </div>
+        <div style="display:flex;gap:6px;background:#1e2736;border-bottom:1px solid #4a5568;padding:4px 6px">
+          <button class="btn btn-red"  onclick="tempDeleteRow()" style="margin:0;padding:4px 12px;font-size:0.72rem">🗑 Supprimer ligne</button>
+          <button class="btn btn-blue" onclick="tempFillDown()"  style="margin:0;padding:4px 12px;font-size:0.72rem">⬇ Remplir ↓</button>
+          <span style="font-family:var(--mono);font-size:0.68rem;color:#546e7a;align-self:center;margin-left:8px">
+            Double-clic pour éditer · <span style="color:#ffcc80">=B1-C1</span> (A=Temps, B=Sonde1, C=Sonde2)
+          </span>
+        </div>
+        <div class="xl-scroll">
+          <table class="xl-table" id="temp-xl-table">
+            <thead>
+              <tr>
+                <th class="xl-corner"></th>
+                <th class="xl-col-head" onclick="tempSortSheet('time')" id="temp-xlh-a">A</th>
+                <th class="xl-col-head" onclick="tempSortSheet('t1')"   id="temp-xlh-b">B</th>
+                <th class="xl-col-head" onclick="tempSortSheet('t2')"   id="temp-xlh-c">C</th>
+                <th class="xl-col-head" id="temp-xlh-d">D</th>
+              </tr>
+              <tr>
+                <th class="xl-corner" style="border-bottom:1px solid #4a5568"></th>
+                <th class="xl-col-head" style="font-size:0.65rem;color:#546e7a;font-weight:normal;background:#252f3e;border-bottom:1px solid #4a5568">Temps (min)</th>
+                <th class="xl-col-head" style="font-size:0.65rem;color:#546e7a;font-weight:normal;background:#252f3e;border-bottom:1px solid #4a5568">Sonde 1 (°C)</th>
+                <th class="xl-col-head" style="font-size:0.65rem;color:#546e7a;font-weight:normal;background:#252f3e;border-bottom:1px solid #4a5568">Sonde 2 (°C)</th>
+                <th class="xl-col-head" style="font-size:0.65rem;color:#546e7a;font-weight:normal;background:#252f3e;border-bottom:1px solid #4a5568">Calcul</th>
+              </tr>
+            </thead>
+            <tbody id="temp-sheet-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table données récentes (toujours visible) -->
+    <div class="widget" id="temp-data-widget">
       <div class="widget-header">📋 Données récentes</div>
       <div class="widget-body">
         <div class="data-table-wrap">
@@ -1528,37 +1795,39 @@ function marRefreshSheet() {
   tb.innerHTML = '';
   state.marVolumes.forEach((v, i) => {
     const p = state.marPressions[i];
-    const calc = i in marSheet.formulas ? marEvalFormula(marSheet.formulas[i], i) : '';
+    const calcRaw = marSheet.formulas[i] || '';
+    const calcVal = calcRaw ? marEvalFormula(calcRaw, i) : '';
     const tr = document.createElement('tr');
-    tr.style.background = i % 2 === 0 ? 'var(--bg2)' : 'var(--bg3)';
-    tr.style.cursor = 'pointer';
-    if (marSheet.selected === i) tr.style.outline = '1px solid var(--blue)';
-    tr.onclick = () => { marSheet.selected = i; marRefreshSheet(); };
+    const isSelected = marSheet.selected === i;
 
-    // N°
+    // Numéro de ligne
     const tdN = document.createElement('td');
+    tdN.className = 'xl-row-num' + (isSelected ? ' row-selected' : '');
     tdN.textContent = i + 1;
-    tdN.style.cssText = 'padding:7px 10px;text-align:center;color:var(--text-dim);border-bottom:1px solid rgba(42,58,74,0.4)';
     tr.appendChild(tdN);
 
-    // Volume (éditable)
+    // Volume (col A)
     const tdV = document.createElement('td');
-    tdV.textContent = v.toFixed(1);
-    tdV.style.cssText = 'padding:7px 10px;text-align:center;color:var(--blue);border-bottom:1px solid rgba(42,58,74,0.4)';
+    tdV.className = 'xl-cell col-a' + (isSelected ? ' selected' : '');
+    tdV.textContent = v.toFixed(2);
+    tdV.onclick = () => { marSheet.selected = i; marXlUpdateBar('mar', `A${i+1}`, v.toFixed(2)); marRefreshSheet(); };
     tdV.ondblclick = e => { e.stopPropagation(); marEditCell(tdV, 'volume', i); };
     tr.appendChild(tdV);
 
-    // Pression (éditable)
+    // Pression (col B)
     const tdP = document.createElement('td');
-    tdP.textContent = p.toFixed(1);
-    tdP.style.cssText = 'padding:7px 10px;text-align:center;color:var(--green);border-bottom:1px solid rgba(42,58,74,0.4)';
+    tdP.className = 'xl-cell col-b' + (isSelected ? ' selected' : '');
+    tdP.textContent = p.toFixed(2);
+    tdP.onclick = () => { marSheet.selected = i; marXlUpdateBar('mar', `B${i+1}`, p.toFixed(2)); marRefreshSheet(); };
     tdP.ondblclick = e => { e.stopPropagation(); marEditCell(tdP, 'pres', i); };
     tr.appendChild(tdP);
 
-    // Calcul (formule)
+    // Calcul (col C)
     const tdC = document.createElement('td');
-    tdC.textContent = calc;
-    tdC.style.cssText = 'padding:7px 10px;text-align:center;color:var(--amber);border-bottom:1px solid rgba(42,58,74,0.4)';
+    tdC.className = 'xl-cell col-calc' + (isSelected ? ' selected' : '');
+    tdC.textContent = calcVal;
+    tdC.title = calcRaw;
+    tdC.onclick = () => { marSheet.selected = i; marXlUpdateBar('mar', `C${i+1}`, calcRaw || calcVal); marRefreshSheet(); };
     tdC.ondblclick = e => { e.stopPropagation(); marEditCell(tdC, 'calc', i); };
     tr.appendChild(tdC);
 
@@ -1566,10 +1835,18 @@ function marRefreshSheet() {
   });
 }
 
+function marXlUpdateBar(mod, ref, val) {
+  const r = document.getElementById(`${mod}-xl-ref`);
+  const f = document.getElementById(`${mod}-xl-fval`);
+  if (r) r.textContent = ref;
+  if (f) f.textContent = val;
+}
+
 function marEditCell(td, col, rowIdx) {
   const input = document.createElement('input');
   input.type = 'text';
-  input.style.cssText = 'width:100%;background:var(--bg);color:var(--amber);border:1px solid var(--blue);font-family:var(--mono);font-size:0.8rem;padding:4px;text-align:center;outline:none';
+  input.style.cssText = 'width:100%;height:100%;background:#fff;color:#000;border:2px solid #1976d2;font-family:Segoe UI,Arial,sans-serif;font-size:0.82rem;padding:2px 6px;text-align:right;outline:none;box-sizing:border-box';
+  td.classList.add('editing');
   let initVal = '';
   if (col === 'volume')    initVal = state.marVolumes[rowIdx].toFixed(1);
   else if (col === 'pres') initVal = state.marPressions[rowIdx].toFixed(1);
@@ -1833,8 +2110,280 @@ function resizeMariotteCharts() {
 }
 
 /* ══════════════════════════════════════
-   OSCILLOSCOPE SIMULATOR
+   ── TABLEUR pH ──
 ══════════════════════════════════════ */
+const phSheet = { formulas: {}, selected: null, sortAsc: { num:true, vol:true, ph:true } };
+
+function phShowTab(tab) {
+  const tg = document.getElementById('ph-tab-graph');
+  const ts = document.getElementById('ph-tab-sheet');
+  const dw = document.getElementById('ph-data-widget');
+  document.getElementById('ph-panel-graph').style.display  = tab === 'graph' ? 'block' : 'none';
+  document.getElementById('ph-panel-sheet').style.display  = tab === 'sheet' ? 'flex'  : 'none';
+  dw.style.display = tab === 'graph' ? '' : 'none';
+  if (tab === 'graph') {
+    tg.style.color = 'var(--red)';      tg.style.borderBottom = '3px solid var(--red)';
+    ts.style.color = 'var(--text-dim)'; ts.style.borderBottom = '3px solid transparent';
+  } else {
+    ts.style.color = 'var(--red)';      ts.style.borderBottom = '3px solid var(--red)';
+    tg.style.color = 'var(--text-dim)'; tg.style.borderBottom = '3px solid transparent';
+    phRefreshSheet();
+  }
+}
+
+function phRefreshSheet() {
+  const tb = document.getElementById('ph-sheet-body');
+  tb.innerHTML = '';
+  state.phVolumes.forEach((v, i) => {
+    const ph = state.phValues[i];
+    const calcRaw = phSheet.formulas[i] || '';
+    const calcVal = calcRaw ? phEvalFormula(calcRaw, i) : '';
+    const isSelected = phSheet.selected === i;
+    const tr = document.createElement('tr');
+
+    const tdN = document.createElement('td');
+    tdN.className = 'xl-row-num' + (isSelected ? ' row-selected' : '');
+    tdN.textContent = i + 1;
+    tr.appendChild(tdN);
+
+    const tdV = document.createElement('td');
+    tdV.className = 'xl-cell col-a' + (isSelected ? ' selected' : '');
+    tdV.textContent = v.toFixed(2);
+    tdV.onclick = () => { phSheet.selected = i; marXlUpdateBar('ph', `A${i+1}`, v.toFixed(2)); phRefreshSheet(); };
+    tdV.ondblclick = e => { e.stopPropagation(); phEditCell(tdV, 'vol', i); };
+    tr.appendChild(tdV);
+
+    const tdP = document.createElement('td');
+    tdP.className = 'xl-cell col-b' + (isSelected ? ' selected' : '');
+    tdP.textContent = ph.toFixed(2);
+    tdP.onclick = () => { phSheet.selected = i; marXlUpdateBar('ph', `B${i+1}`, ph.toFixed(2)); phRefreshSheet(); };
+    tdP.ondblclick = e => { e.stopPropagation(); phEditCell(tdP, 'ph', i); };
+    tr.appendChild(tdP);
+
+    const tdC = document.createElement('td');
+    tdC.className = 'xl-cell col-calc' + (isSelected ? ' selected' : '');
+    tdC.textContent = calcVal; tdC.title = calcRaw;
+    tdC.onclick = () => { phSheet.selected = i; marXlUpdateBar('ph', `C${i+1}`, calcRaw || calcVal); phRefreshSheet(); };
+    tdC.ondblclick = e => { e.stopPropagation(); phEditCell(tdC, 'calc', i); };
+    tr.appendChild(tdC);
+
+    tb.appendChild(tr);
+  });
+}
+
+function phEditCell(td, col, i) {
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.style.cssText = 'width:100%;height:100%;background:#fff;color:#000;border:2px solid #1976d2;font-family:Segoe UI,Arial,sans-serif;font-size:0.82rem;padding:2px 6px;text-align:right;outline:none;box-sizing:border-box';
+  td.classList.add('editing');
+  input.value = col === 'vol' ? state.phVolumes[i].toFixed(1)
+              : col === 'ph'  ? state.phValues[i].toFixed(2)
+              : phSheet.formulas[i] || td.textContent;
+  td.textContent = ''; td.appendChild(input);
+  input.focus(); input.select();
+  const commit = () => {
+    const raw = input.value.trim();
+    if (col === 'vol') { const v = parseFloat(raw.replace(',','.')); if (!isNaN(v)) { state.phVolumes[i] = v; phChart.data.datasets[0].data = state.phVolumes.map((v,i)=>({x:v,y:state.phValues[i]})); phChart.update(); } }
+    else if (col === 'ph') { const p = parseFloat(raw.replace(',','.')); if (!isNaN(p)) { state.phValues[i] = p; phChart.data.datasets[0].data = state.phVolumes.map((v,i)=>({x:v,y:state.phValues[i]})); phChart.update(); } }
+    else if (col === 'calc') { if (raw === '') delete phSheet.formulas[i]; else phSheet.formulas[i] = raw; }
+    phRefreshSheet();
+  };
+  input.addEventListener('blur', commit);
+  input.addEventListener('keydown', e => { if (e.key==='Enter'){e.preventDefault();commit();} if(e.key==='Escape') phRefreshSheet(); });
+}
+
+function phEvalFormula(formula, i) {
+  if (!formula.startsWith('=')) return formula;
+  try {
+    let expr = formula.slice(1).replace(/([ABab])(\d+)/g, (_, col, num) => {
+      const r = parseInt(num) - 1;
+      if (r < 0 || r >= state.phVolumes.length) return '0';
+      return col.toUpperCase() === 'A' ? String(state.phVolumes[r]) : String(state.phValues[r]);
+    });
+    const res = Function('"use strict";return('+expr+')')();
+    return isFinite(res) ? res.toFixed(3) : 'ERR';
+  } catch { return 'ERR'; }
+}
+
+function phFillDown() {
+  if (!state.phVolumes.length) return;
+  if (!(0 in phSheet.formulas)) { alert('Entrez d\'abord une formule dans la ligne 1.\nEx : =A1*B1'); return; }
+  const base = phSheet.formulas[0];
+  state.phVolumes.forEach((_, i) => { phSheet.formulas[i] = base.replace(/([ABab])(\d+)/g, (_, c) => `${c}${i+1}`); });
+  phRefreshSheet();
+}
+
+function phDeleteRow() {
+  if (phSheet.selected === null) { alert('Cliquez d\'abord sur une ligne.'); return; }
+  const i = phSheet.selected;
+  state.phVolumes.splice(i, 1); state.phValues.splice(i, 1);
+  const newF = {};
+  Object.entries(phSheet.formulas).forEach(([k, v]) => { const ki=parseInt(k); if(ki<i) newF[ki]=v; else if(ki>i) newF[ki-1]=v; });
+  phSheet.formulas = newF; phSheet.selected = null;
+  phChart.data.datasets[0].data = state.phVolumes.map((v,i)=>({x:v,y:state.phValues[i]})); phChart.update();
+  // refresh résumé table
+  const tb2 = document.getElementById('ph-table-body'); tb2.innerHTML = '';
+  state.phVolumes.forEach((v,i) => { const tr=document.createElement('tr'); tr.innerHTML=`<td>${i+1}</td><td>${v.toFixed(2)}</td><td>${state.phValues[i].toFixed(2)}</td>`; tb2.appendChild(tr); });
+  phRefreshSheet();
+}
+
+function phSortSheet(col) {
+  if (state.phVolumes.length < 2) return;
+  const asc = phSheet.sortAsc[col] !== false; phSheet.sortAsc[col] = !asc;
+  const idx = state.phVolumes.map((_, i) => i);
+  idx.sort((a, b) => {
+    let va = col==='vol' ? state.phVolumes[a] : col==='ph' ? state.phValues[a] : a;
+    let vb = col==='vol' ? state.phVolumes[b] : col==='ph' ? state.phValues[b] : b;
+    return asc ? va-vb : vb-va;
+  });
+  state.phVolumes = idx.map(i => state.phVolumes[i]);
+  state.phValues  = idx.map(i => state.phValues[i]);
+  const newF = {}; idx.forEach((old,ni) => { if(old in phSheet.formulas) newF[ni]=phSheet.formulas[old]; });
+  phSheet.formulas = newF; phSheet.selected = null;
+  phChart.data.datasets[0].data = state.phVolumes.map((v,i)=>({x:v,y:state.phValues[i]})); phChart.update();
+  const tb2 = document.getElementById('ph-table-body'); tb2.innerHTML = '';
+  state.phVolumes.forEach((v,i) => { const tr=document.createElement('tr'); tr.innerHTML=`<td>${i+1}</td><td>${v.toFixed(2)}</td><td>${state.phValues[i].toFixed(2)}</td>`; tb2.appendChild(tr); });
+  phRefreshSheet();
+}
+
+/* ══════════════════════════════════════
+   ── TABLEUR TEMPÉRATURE ──
+══════════════════════════════════════ */
+const tempSheet = { formulas: {}, selected: null, sortAsc: { num:true, time:true, t1:true, t2:true } };
+
+function tempShowTab(tab) {
+  const tg = document.getElementById('temp-tab-graph');
+  const ts = document.getElementById('temp-tab-sheet');
+  const dw = document.getElementById('temp-data-widget');
+  document.getElementById('temp-panel-graph').style.display  = tab === 'graph' ? 'block' : 'none';
+  document.getElementById('temp-panel-sheet').style.display  = tab === 'sheet' ? 'flex'  : 'none';
+  dw.style.display = tab === 'graph' ? '' : 'none';
+  if (tab === 'graph') {
+    tg.style.color = 'var(--amber)';    tg.style.borderBottom = '3px solid var(--amber)';
+    ts.style.color = 'var(--text-dim)'; ts.style.borderBottom = '3px solid transparent';
+  } else {
+    ts.style.color = 'var(--amber)';    ts.style.borderBottom = '3px solid var(--amber)';
+    tg.style.color = 'var(--text-dim)'; tg.style.borderBottom = '3px solid transparent';
+    tempRefreshSheet();
+  }
+}
+
+function tempRefreshSheet() {
+  const tb = document.getElementById('temp-sheet-body');
+  tb.innerHTML = '';
+  state.tempCsvRows.forEach((row, i) => {
+    const time = parseFloat(row[0]), t1 = parseFloat(row[1]), t2 = parseFloat(row[2]);
+    const calcRaw = tempSheet.formulas[i] || '';
+    const calcVal = calcRaw ? tempEvalFormula(calcRaw, i) : '';
+    const isSelected = tempSheet.selected === i;
+    const tr = document.createElement('tr');
+
+    const tdN = document.createElement('td');
+    tdN.className = 'xl-row-num' + (isSelected ? ' row-selected' : '');
+    tdN.textContent = i + 1;
+    tr.appendChild(tdN);
+
+    const tdT = document.createElement('td');
+    tdT.className = 'xl-cell col-a' + (isSelected ? ' selected' : '');
+    tdT.textContent = time.toFixed(2);
+    tdT.onclick = () => { tempSheet.selected = i; marXlUpdateBar('temp', `A${i+1}`, time.toFixed(2)); tempRefreshSheet(); };
+    tdT.ondblclick = e => { e.stopPropagation(); tempEditCell(tdT, 'time', i); };
+    tr.appendChild(tdT);
+
+    const td1 = document.createElement('td');
+    td1.className = 'xl-cell col-b' + (isSelected ? ' selected' : '');
+    td1.textContent = t1.toFixed(2);
+    td1.onclick = () => { tempSheet.selected = i; marXlUpdateBar('temp', `B${i+1}`, t1.toFixed(2)); tempRefreshSheet(); };
+    td1.ondblclick = e => { e.stopPropagation(); tempEditCell(td1, 't1', i); };
+    tr.appendChild(td1);
+
+    const td2 = document.createElement('td');
+    td2.className = 'xl-cell col-c' + (isSelected ? ' selected' : '');
+    td2.textContent = !isNaN(t2) ? t2.toFixed(2) : '—';
+    td2.onclick = () => { tempSheet.selected = i; marXlUpdateBar('temp', `C${i+1}`, !isNaN(t2)?t2.toFixed(2):''); tempRefreshSheet(); };
+    td2.ondblclick = e => { e.stopPropagation(); tempEditCell(td2, 't2', i); };
+    tr.appendChild(td2);
+
+    const tdC = document.createElement('td');
+    tdC.className = 'xl-cell col-calc' + (isSelected ? ' selected' : '');
+    tdC.textContent = calcVal; tdC.title = calcRaw;
+    tdC.onclick = () => { tempSheet.selected = i; marXlUpdateBar('temp', `D${i+1}`, calcRaw || calcVal); tempRefreshSheet(); };
+    tdC.ondblclick = e => { e.stopPropagation(); tempEditCell(tdC, 'calc', i); };
+    tr.appendChild(tdC);
+
+    tb.appendChild(tr);
+  });
+}
+
+function tempEditCell(td, col, i) {
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.style.cssText = 'width:100%;height:100%;background:#fff;color:#000;border:2px solid #1976d2;font-family:Segoe UI,Arial,sans-serif;font-size:0.82rem;padding:2px 6px;text-align:right;outline:none;box-sizing:border-box';
+  td.classList.add('editing');
+  const row = state.tempCsvRows[i];
+  input.value = col==='time' ? parseFloat(row[0]).toFixed(2)
+              : col==='t1'   ? parseFloat(row[1]).toFixed(1)
+              : col==='t2'   ? parseFloat(row[2]).toFixed(1)
+              : tempSheet.formulas[i] || td.textContent;
+  td.textContent = ''; td.appendChild(input); input.focus(); input.select();
+  const commit = () => {
+    const raw = input.value.trim();
+    if (col==='time') { const v=parseFloat(raw.replace(',','.')); if(!isNaN(v)) row[0]=v.toFixed(4); }
+    else if (col==='t1') { const v=parseFloat(raw.replace(',','.')); if(!isNaN(v)) row[1]=v.toFixed(2); }
+    else if (col==='t2') { const v=parseFloat(raw.replace(',','.')); if(!isNaN(v)) row[2]=v.toFixed(2); }
+    else if (col==='calc') { if(raw==='') delete tempSheet.formulas[i]; else tempSheet.formulas[i]=raw; }
+    tempRefreshSheet();
+  };
+  input.addEventListener('blur', commit);
+  input.addEventListener('keydown', e => { if(e.key==='Enter'){e.preventDefault();commit();} if(e.key==='Escape') tempRefreshSheet(); });
+}
+
+function tempEvalFormula(formula, i) {
+  if (!formula.startsWith('=')) return formula;
+  try {
+    let expr = formula.slice(1).replace(/([ABCabc])(\d+)/g, (_, col, num) => {
+      const r = parseInt(num) - 1;
+      if (r < 0 || r >= state.tempCsvRows.length) return '0';
+      const rr = state.tempCsvRows[r];
+      if (col.toUpperCase()==='A') return String(parseFloat(rr[0]));
+      if (col.toUpperCase()==='B') return String(parseFloat(rr[1]));
+      if (col.toUpperCase()==='C') return String(parseFloat(rr[2]) || 0);
+      return '0';
+    });
+    const res = Function('"use strict";return('+expr+')')();
+    return isFinite(res) ? res.toFixed(3) : 'ERR';
+  } catch { return 'ERR'; }
+}
+
+function tempFillDown() {
+  if (!state.tempCsvRows.length) return;
+  if (!(0 in tempSheet.formulas)) { alert('Entrez d\'abord une formule dans la ligne 1.\nEx : =B1-C1'); return; }
+  const base = tempSheet.formulas[0];
+  state.tempCsvRows.forEach((_, i) => { tempSheet.formulas[i] = base.replace(/([ABCabc])(\d+)/g, (_, c) => `${c}${i+1}`); });
+  tempRefreshSheet();
+}
+
+function tempDeleteRow() {
+  if (tempSheet.selected === null) { alert('Cliquez d\'abord sur une ligne.'); return; }
+  const i = tempSheet.selected;
+  state.tempCsvRows.splice(i, 1);
+  const newF = {};
+  Object.entries(tempSheet.formulas).forEach(([k,v]) => { const ki=parseInt(k); if(ki<i) newF[ki]=v; else if(ki>i) newF[ki-1]=v; });
+  tempSheet.formulas = newF; tempSheet.selected = null;
+  tempRefreshSheet();
+}
+
+function tempSortSheet(col) {
+  if (state.tempCsvRows.length < 2) return;
+  const asc = tempSheet.sortAsc[col] !== false; tempSheet.sortAsc[col] = !asc;
+  state.tempCsvRows.sort((a, b) => {
+    let va = col==='time'?parseFloat(a[0]) : col==='t1'?parseFloat(a[1]) : col==='t2'?parseFloat(a[2]) : 0;
+    let vb = col==='time'?parseFloat(b[0]) : col==='t1'?parseFloat(b[1]) : col==='t2'?parseFloat(b[2]) : 0;
+    return asc ? va-vb : vb-va;
+  });
+  tempSheet.selected = null; tempRefreshSheet();
+}
+
 const OSCILO = {
   ueff: 6.0, freq: 50, phaseOffset: 0, verticalOffset: 0,
   divH: 10, divV: 8,
