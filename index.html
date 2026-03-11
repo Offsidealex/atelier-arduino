@@ -1,0 +1,1494 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Atelier Arduino — Lycée Denis Diderot</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════
+   DESIGN : Instrument scientifique / Phosphore
+   ═══════════════════════════════════════════ */
+:root {
+  --bg:       #0a0e14;
+  --bg2:      #111820;
+  --bg3:      #1a2330;
+  --border:   #2a3a4a;
+  --green:    #00e676;
+  --green-d:  #00b050;
+  --amber:    #ffab40;
+  --red:      #ff5252;
+  --blue:     #40c4ff;
+  --purple:   #ce93d8;
+  --text:     #cfd8dc;
+  --text-dim: #546e7a;
+  --mono:     'Share Tech Mono', monospace;
+  --sans:     'Rajdhani', sans-serif;
+  --glow-g:   0 0 12px rgba(0,230,118,0.4);
+  --glow-a:   0 0 12px rgba(255,171,64,0.4);
+  --glow-b:   0 0 12px rgba(64,196,255,0.4);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Grille de fond subtile */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0,230,118,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,230,118,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── HEADER ── */
+#header {
+  position: relative;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 10;
+}
+#header .logo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+#header .logo-icon {
+  font-size: 2rem;
+  filter: drop-shadow(0 0 8px rgba(0,230,118,0.6));
+}
+#header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--green);
+  text-shadow: var(--glow-g);
+  text-transform: uppercase;
+}
+#header .subtitle {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+  margin-top: 2px;
+}
+#header .serial-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+}
+.dot {
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: var(--text-dim);
+  display: inline-block;
+  flex-shrink: 0;
+}
+.dot.connected { background: var(--green); box-shadow: var(--glow-g); animation: pulse 2s infinite; }
+.dot.error     { background: var(--red); box-shadow: 0 0 8px rgba(255,82,82,0.5); }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+#connect-btn {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  padding: 6px 16px;
+  border: 1px solid var(--green);
+  background: transparent;
+  color: var(--green);
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: all .2s;
+  text-transform: uppercase;
+}
+#connect-btn:hover { background: rgba(0,230,118,0.1); box-shadow: var(--glow-g); }
+#connect-btn:disabled { opacity: 0.4; cursor: default; }
+
+/* ── NAVIGATION ── */
+#nav {
+  display: flex;
+  gap: 0;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  z-index: 10;
+}
+.nav-tab {
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: 0.9rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 13px 28px;
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all .2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.nav-tab:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+.nav-tab.active { color: var(--green); border-bottom-color: var(--green); text-shadow: var(--glow-g); }
+.nav-tab.tab-ph.active    { color: var(--red);    border-bottom-color: var(--red); }
+.nav-tab.tab-mariotte.active { color: var(--blue); border-bottom-color: var(--blue); }
+.nav-tab.tab-temp.active  { color: var(--amber);  border-bottom-color: var(--amber); }
+
+/* ── PAGES ── */
+.page { display: none; padding: 20px 24px; position: relative; z-index: 1; }
+.page.active { display: flex; gap: 20px; min-height: calc(100vh - 120px); }
+#page-home.active { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+
+/* ── HOME ── */
+.home-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  width: 100%;
+  max-width: 1000px;
+}
+.module-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 36px 28px;
+  text-align: center;
+  cursor: pointer;
+  transition: all .25s;
+  position: relative;
+  overflow: hidden;
+}
+.module-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+}
+.module-card.ph::before    { background: var(--red); }
+.module-card.mariotte::before { background: var(--blue); }
+.module-card.temp::before  { background: var(--amber); }
+.module-card:hover { transform: translateY(-4px); border-color: rgba(255,255,255,0.15); }
+.module-card.ph:hover    { box-shadow: 0 8px 32px rgba(255,82,82,0.15); }
+.module-card.mariotte:hover { box-shadow: 0 8px 32px rgba(64,196,255,0.15); }
+.module-card.temp:hover  { box-shadow: 0 8px 32px rgba(255,171,64,0.15); }
+.module-card .icon { font-size: 3.5rem; margin-bottom: 16px; display: block; }
+.module-card h2 { font-size: 1.2rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; }
+.module-card.ph h2    { color: var(--red); }
+.module-card.mariotte h2 { color: var(--blue); }
+.module-card.temp h2  { color: var(--amber); }
+.module-card p { font-family: var(--mono); font-size: 0.75rem; color: var(--text-dim); line-height: 1.7; }
+.launch-btn {
+  margin-top: 24px;
+  padding: 10px 24px;
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: 0.9rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  transition: all .2s;
+}
+.module-card.ph    .launch-btn { background: var(--red);    color: #fff; }
+.module-card.mariotte .launch-btn { background: var(--blue);   color: #000; }
+.module-card.temp  .launch-btn { background: var(--amber);  color: #000; }
+
+.home-warning {
+  margin-top: 20px;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--amber);
+  text-align: center;
+  opacity: 0.7;
+}
+
+/* ── LAYOUT MODULE ── */
+.panel-left {
+  width: 280px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.panel-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ── WIDGETS ── */
+.widget {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.widget-header {
+  padding: 8px 14px;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  border-bottom: 1px solid var(--border);
+  background: rgba(255,255,255,0.02);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.widget-body { padding: 14px; }
+
+/* ── BIG VALUE DISPLAY ── */
+.big-val {
+  font-family: var(--mono);
+  font-size: 3.2rem;
+  font-weight: normal;
+  text-align: center;
+  line-height: 1;
+  padding: 10px 0 4px;
+}
+.big-val.ph-color   { color: var(--green); text-shadow: var(--glow-g); }
+.big-val.volt-color { color: var(--amber); }
+.big-val.pres-color { color: var(--blue);  text-shadow: var(--glow-b); }
+.big-val.temp-color { color: var(--red);   }
+.big-val.temp2-color{ color: var(--blue);  }
+.big-unit {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  text-align: center;
+  color: var(--text-dim);
+  letter-spacing: 2px;
+  margin-bottom: 6px;
+}
+.sub-val {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  text-align: center;
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+
+/* ── BUTTONS ── */
+.btn {
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: 0.85rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 9px 14px;
+  border: 1px solid;
+  cursor: pointer;
+  width: 100%;
+  margin-bottom: 7px;
+  transition: all .18s;
+  background: transparent;
+}
+.btn:last-child { margin-bottom: 0; }
+.btn:disabled { opacity: 0.3; cursor: default; }
+.btn-green { border-color: var(--green); color: var(--green); }
+.btn-green:not(:disabled):hover { background: rgba(0,230,118,0.1); box-shadow: var(--glow-g); }
+.btn-red   { border-color: var(--red);   color: var(--red); }
+.btn-red:not(:disabled):hover   { background: rgba(255,82,82,0.1); }
+.btn-blue  { border-color: var(--blue);  color: var(--blue); }
+.btn-blue:not(:disabled):hover  { background: rgba(64,196,255,0.1); box-shadow: var(--glow-b); }
+.btn-amber { border-color: var(--amber); color: var(--amber); }
+.btn-amber:not(:disabled):hover { background: rgba(255,171,64,0.1); box-shadow: var(--glow-a); }
+.btn-purple{ border-color: var(--purple);color: var(--purple); }
+.btn-purple:not(:disabled):hover{ background: rgba(206,147,216,0.1); }
+.btn-solid-green { background: var(--green); color: #000; border-color: var(--green); font-weight: 700; }
+.btn-solid-red   { background: var(--red);   color: #fff; border-color: var(--red); font-weight: 700; }
+
+/* ── INPUTS ── */
+.field-group { margin-bottom: 10px; }
+.field-label {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 5px;
+}
+input[type="number"], input[type="text"] {
+  width: 100%;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--green);
+  font-family: var(--mono);
+  font-size: 1.1rem;
+  padding: 8px 12px;
+  text-align: center;
+  outline: none;
+  transition: border-color .2s;
+}
+input:focus { border-color: var(--green); box-shadow: 0 0 8px rgba(0,230,118,0.2); }
+
+/* Quick buttons strip */
+.quick-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 7px;
+}
+.quick-btn {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  padding: 4px 8px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all .15s;
+}
+.quick-btn:hover { border-color: var(--blue); color: var(--blue); }
+
+/* ── TABLE DONNÉES ── */
+.data-table-wrap {
+  max-height: 200px;
+  overflow-y: auto;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+}
+.data-table-wrap::-webkit-scrollbar { width: 5px; }
+.data-table-wrap::-webkit-scrollbar-track { background: var(--bg); }
+.data-table-wrap::-webkit-scrollbar-thumb { background: var(--border); }
+table.data-table { width: 100%; border-collapse: collapse; }
+table.data-table th {
+  color: var(--text-dim);
+  padding: 4px 8px;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+  letter-spacing: 1px;
+  font-size: 0.65rem;
+  font-weight: normal;
+}
+table.data-table td {
+  padding: 4px 8px;
+  text-align: center;
+  color: var(--text);
+  border-bottom: 1px solid rgba(42,58,74,0.5);
+}
+table.data-table tr:last-child td { color: var(--green); }
+
+/* ── LOG ── */
+.log-box {
+  background: var(--bg);
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: var(--text-dim);
+  height: 110px;
+  overflow-y: auto;
+  padding: 8px;
+  line-height: 1.6;
+}
+.log-box::-webkit-scrollbar { width: 4px; }
+.log-box::-webkit-scrollbar-thumb { background: var(--border); }
+.log-line { color: var(--text-dim); }
+.log-line.ok  { color: var(--green); }
+.log-line.err { color: var(--red); }
+.log-line.info{ color: var(--amber); }
+
+/* ── CHART CONTAINER ── */
+.chart-container {
+  position: relative;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  flex: 1;
+  padding: 16px;
+  min-height: 400px;
+}
+.chart-container canvas { max-height: 100% !important; }
+
+/* ── STATS ROW ── */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.stat-cell {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 10px;
+  text-align: center;
+}
+.stat-val {
+  font-family: var(--mono);
+  font-size: 1.1rem;
+  color: var(--green);
+}
+.stat-lbl {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 2px;
+}
+
+/* ── CALIB STATUS ── */
+.calib-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 1px;
+  border-radius: 2px;
+  margin-top: 6px;
+}
+.calib-badge.ok  { background: rgba(0,230,118,0.15); color: var(--green); border: 1px solid rgba(0,230,118,0.3); }
+.calib-badge.warn{ background: rgba(255,171,64,0.15); color: var(--amber); border: 1px solid rgba(255,171,64,0.3); }
+
+/* ── MODAL ── */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+}
+.modal-overlay.show { display: flex; }
+.modal-box {
+  background: var(--bg2);
+  border: 1px solid var(--green);
+  box-shadow: 0 0 40px rgba(0,230,118,0.2);
+  padding: 32px;
+  max-width: 480px;
+  width: 90%;
+}
+.modal-box h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--green);
+  margin-bottom: 16px;
+  font-family: var(--sans);
+}
+.modal-box p {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  color: var(--text);
+  line-height: 1.8;
+  margin-bottom: 20px;
+}
+.modal-actions { display: flex; gap: 12px; }
+.modal-actions .btn { margin-bottom: 0; }
+
+/* ── CALIB MODAL ── */
+#calib-modal .modal-box { border-color: var(--amber); box-shadow: 0 0 40px rgba(255,171,64,0.2); }
+#calib-modal h3 { color: var(--amber); }
+.calib-step { display: none; }
+.calib-step.active { display: block; }
+.calib-live-val {
+  font-family: var(--mono);
+  font-size: 2rem;
+  color: var(--amber);
+  text-align: center;
+  padding: 14px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  margin: 14px 0;
+  text-shadow: var(--glow-a);
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  .page.active { flex-direction: column; }
+  .panel-left { width: 100%; }
+  .home-grid { grid-template-columns: 1fr; }
+}
+
+/* ── SCROLLBAR GLOBAL ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); }
+</style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══ -->
+<div id="header">
+  <div class="logo">
+    <span class="logo-icon">⚙️</span>
+    <div>
+      <h1>Atelier Arduino</h1>
+      <div class="subtitle">LYCÉE DENIS DIDEROT — BELFORT — 2026</div>
+    </div>
+  </div>
+  <div class="serial-badge">
+    <span class="dot" id="conn-dot"></span>
+    <span id="conn-label" style="color:var(--text-dim)">NON CONNECTÉ</span>
+    <button id="connect-btn" onclick="connectSerial()">▶ CONNECTER</button>
+  </div>
+</div>
+
+<!-- ═══ NAV ═══ -->
+<div id="nav">
+  <button class="nav-tab active" onclick="showPage('home')" data-page="home">🏠 Accueil</button>
+  <button class="nav-tab tab-ph"       onclick="showPage('ph')"       data-page="ph">🧪 Dosage pH</button>
+  <button class="nav-tab tab-mariotte" onclick="showPage('mariotte')" data-page="mariotte">🎈 Mariotte</button>
+  <button class="nav-tab tab-temp"     onclick="showPage('temp')"     data-page="temp">🌡️ Température</button>
+</div>
+
+<!-- ═══════════════════ PAGE HOME ═══════════════════ -->
+<div class="page active" id="page-home">
+  <div class="home-grid">
+    <div class="module-card ph" onclick="showPage('ph')">
+      <span class="icon">🧪</span>
+      <h2>Dosage pH</h2>
+      <p>pH-mètre avec calibration<br>Courbe de dosage acide-base<br>Point d'équivalence + dérivée</p>
+      <button class="launch-btn">▶ Lancer le TP</button>
+    </div>
+    <div class="module-card mariotte" onclick="showPage('mariotte')">
+      <span class="icon">🎈</span>
+      <h2>Loi de Mariotte</h2>
+      <p>P × V = Constante<br>Capteur de pression Arduino<br>Régression + vérification R²</p>
+      <button class="launch-btn">▶ Lancer le TP</button>
+    </div>
+    <div class="module-card temp" onclick="showPage('temp')">
+      <span class="icon">🌡️</span>
+      <h2>Température</h2>
+      <p>Sondes DS18B20<br>1 ou 2 sondes, temps réel<br>Enregistrement CSV</p>
+      <button class="launch-btn">▶ Lancer le TP</button>
+    </div>
+  </div>
+  <p class="home-warning">⚠ Requiert Google Chrome ou Microsoft Edge — Web Serial API</p>
+</div>
+
+<!-- ═══════════════════ PAGE pH ═══════════════════ -->
+<div class="page" id="page-ph">
+  <!-- GAUCHE -->
+  <div class="panel-left">
+    <!-- pH actuel -->
+    <div class="widget">
+      <div class="widget-header">📊 pH Actuel</div>
+      <div class="widget-body" style="text-align:center">
+        <div class="big-val ph-color" id="ph-display">--.-</div>
+        <div class="big-unit">pH</div>
+        <div class="sub-val" id="volt-display">Tension : --- mV</div>
+        <div style="margin-top:8px">
+          <span class="calib-badge warn" id="calib-badge">⚠ NON CALIBRÉ</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Calibration -->
+    <div class="widget">
+      <div class="widget-header">⚙️ Calibration</div>
+      <div class="widget-body">
+        <button class="btn btn-amber" onclick="openCalib()">🧪 CALIBRER LE pH-MÈTRE</button>
+        <button class="btn btn-green" onclick="saveCalib()">💾 Sauvegarder</button>
+        <button class="btn btn-blue" onclick="loadCalibFile()">📂 Charger</button>
+      </div>
+    </div>
+
+    <!-- Volume -->
+    <div class="widget">
+      <div class="widget-header">💧 Volume Titrant</div>
+      <div class="widget-body">
+        <div class="field-group">
+          <label class="field-label">Volume total burette (mL)</label>
+          <input type="number" id="ph-vol-input" value="0.0" min="0" step="0.5">
+        </div>
+        <button class="btn btn-solid-green" id="ph-add-btn" onclick="phAddPoint()" disabled>➕ AJOUTER POINT</button>
+        <div style="text-align:center;margin-top:8px">
+          <span class="field-label">Volume total ajouté</span>
+          <div style="font-family:var(--mono);font-size:1.3rem;color:var(--red)" id="ph-vol-total">0.0 mL</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="widget">
+      <div class="widget-header">🔬 Actions</div>
+      <div class="widget-body">
+        <button class="btn btn-amber" onclick="phNewDosage()">🔄 NOUVEAU DOSAGE</button>
+        <button class="btn btn-green" onclick="phSave()">💾 SAUVEGARDER CSV</button>
+        <button class="btn btn-purple" onclick="phEquivalence()">📐 POINT D'ÉQUIVALENCE</button>
+      </div>
+    </div>
+
+    <!-- Log -->
+    <div class="widget" style="flex:1">
+      <div class="widget-header">📟 Journal</div>
+      <div class="log-box" id="ph-log"></div>
+    </div>
+  </div>
+
+  <!-- DROITE -->
+  <div class="panel-right">
+    <div class="chart-container" style="flex:2">
+      <canvas id="ph-chart"></canvas>
+    </div>
+    <!-- Table données -->
+    <div class="widget">
+      <div class="widget-header">📋 Données</div>
+      <div class="widget-body">
+        <div class="data-table-wrap">
+          <table class="data-table">
+            <thead><tr><th>N°</th><th>Volume (mL)</th><th>pH</th></tr></thead>
+            <tbody id="ph-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ PAGE MARIOTTE ═══════════════════ -->
+<div class="page" id="page-mariotte">
+  <div class="panel-left">
+    <!-- Pression -->
+    <div class="widget">
+      <div class="widget-header">📊 Pression Actuelle</div>
+      <div class="widget-body" style="text-align:center">
+        <div class="big-val pres-color" id="pres-display">---.-</div>
+        <div class="big-unit">kPa</div>
+      </div>
+    </div>
+
+    <!-- Volume -->
+    <div class="widget">
+      <div class="widget-header">💉 Volume Seringue</div>
+      <div class="widget-body">
+        <div class="field-group">
+          <label class="field-label">Volume (mL)</label>
+          <input type="number" id="mar-vol-input" value="60" min="1" step="1">
+        </div>
+        <div class="quick-strip">
+          <span class="field-label" style="width:100%">Accès rapide :</span>
+          <button class="quick-btn" onclick="setMarVol(60)">60</button>
+          <button class="quick-btn" onclick="setMarVol(50)">50</button>
+          <button class="quick-btn" onclick="setMarVol(40)">40</button>
+          <button class="quick-btn" onclick="setMarVol(30)">30</button>
+          <button class="quick-btn" onclick="setMarVol(20)">20</button>
+          <button class="quick-btn" onclick="setMarVol(15)">15</button>
+          <button class="quick-btn" onclick="setMarVol(10)">10</button>
+        </div>
+        <button class="btn btn-solid-green" id="mar-add-btn" onclick="marAddPoint()" disabled style="margin-top:12px">➕ AJOUTER MESURE</button>
+      </div>
+    </div>
+
+    <!-- Résultats -->
+    <div class="widget">
+      <div class="widget-header">📈 Résultats</div>
+      <div class="widget-body">
+        <div class="stats-row">
+          <div class="stat-cell"><div class="stat-val" id="mar-n">0</div><div class="stat-lbl">Points</div></div>
+          <div class="stat-cell"><div class="stat-val" id="mar-pv">---</div><div class="stat-lbl">PV moyen</div></div>
+          <div class="stat-cell"><div class="stat-val" id="mar-r2">---</div><div class="stat-lbl">R²</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="widget">
+      <div class="widget-header">⚙️ Actions</div>
+      <div class="widget-body">
+        <button class="btn btn-amber" onclick="marNewSerie()">🔄 NOUVELLE SÉRIE</button>
+        <button class="btn btn-green" onclick="marSave()">💾 SAUVEGARDER CSV</button>
+        <button class="btn btn-blue" onclick="marRegression()">📈 TRACER RÉGRESSIONS</button>
+      </div>
+    </div>
+
+    <!-- Log -->
+    <div class="widget" style="flex:1">
+      <div class="widget-header">📟 Journal</div>
+      <div class="log-box" id="mar-log"></div>
+    </div>
+  </div>
+
+  <div class="panel-right">
+    <!-- Graphique P=f(V) -->
+    <div class="chart-container" style="flex:1">
+      <canvas id="mar-chart1"></canvas>
+    </div>
+    <!-- Graphique P=f(1/V) -->
+    <div class="chart-container" style="flex:1">
+      <canvas id="mar-chart2"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ PAGE TEMPÉRATURE ═══════════════════ -->
+<div class="page" id="page-temp">
+  <div class="panel-left">
+    <!-- Températures -->
+    <div class="widget">
+      <div class="widget-header">🌡️ Températures</div>
+      <div class="widget-body" style="text-align:center">
+        <div class="field-label" style="margin-bottom:4px">Sonde 1</div>
+        <div class="big-val temp-color" id="temp1-display">--.-</div>
+        <div class="big-unit">°C</div>
+        <div id="temp2-zone">
+          <div class="field-label" style="margin-top:12px;margin-bottom:4px">Sonde 2</div>
+          <div class="big-val temp2-color" id="temp2-display">--.-</div>
+          <div class="big-unit">°C</div>
+          <div class="field-label" style="margin-top:8px">ΔT</div>
+          <div style="font-family:var(--mono);font-size:1.4rem;color:var(--green);text-align:center" id="delta-display">--.-°C</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Config -->
+    <div class="widget">
+      <div class="widget-header">⚙️ Configuration</div>
+      <div class="widget-body">
+        <div class="field-label">Nombre de sondes</div>
+        <div style="display:flex;gap:10px;margin-top:6px">
+          <label style="font-family:var(--mono);font-size:0.8rem;cursor:pointer;display:flex;align-items:center;gap:6px">
+            <input type="radio" name="nb-sondes" value="1" onchange="setNbSondes(1)"> 1 sonde
+          </label>
+          <label style="font-family:var(--mono);font-size:0.8rem;cursor:pointer;display:flex;align-items:center;gap:6px">
+            <input type="radio" name="nb-sondes" value="2" checked onchange="setNbSondes(2)"> 2 sondes
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Enregistrement -->
+    <div class="widget">
+      <div class="widget-header">📹 Enregistrement</div>
+      <div class="widget-body">
+        <button class="btn btn-solid-green" id="temp-start-btn" onclick="tempStart()" disabled>▶ START</button>
+        <button class="btn btn-solid-red"   id="temp-stop-btn"  onclick="tempStop()"  disabled>■ STOP</button>
+        <div class="stats-row" style="margin-top:10px">
+          <div class="stat-cell"><div class="stat-val" id="temp-n">0</div><div class="stat-lbl">Mesures</div></div>
+          <div class="stat-cell"><div class="stat-val" id="temp-dur">0:00</div><div class="stat-lbl">Durée</div></div>
+          <div class="stat-cell"><div class="stat-val" id="temp-rec-dot">●</div><div class="stat-lbl" id="temp-rec-lbl">ATTENTE</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="widget">
+      <div class="widget-header">⚙️ Actions</div>
+      <div class="widget-body">
+        <button class="btn btn-amber" onclick="tempNew()">🔄 NOUVELLE ACQUISITION</button>
+        <button class="btn btn-green" onclick="tempSave()">💾 TÉLÉCHARGER CSV</button>
+      </div>
+    </div>
+
+    <!-- Log -->
+    <div class="widget" style="flex:1">
+      <div class="widget-header">📟 Journal</div>
+      <div class="log-box" id="temp-log"></div>
+    </div>
+  </div>
+
+  <div class="panel-right">
+    <div class="chart-container" style="flex:1">
+      <canvas id="temp-chart"></canvas>
+    </div>
+    <div class="widget">
+      <div class="widget-header">📋 Données récentes</div>
+      <div class="widget-body">
+        <div class="data-table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Temps (min)</th><th>Sonde 1 (°C)</th><th>Sonde 2 (°C)</th><th>ΔT</th></tr></thead>
+            <tbody id="temp-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL CALIBRATION ═══ -->
+<div class="modal-overlay" id="calib-modal">
+  <div class="modal-box">
+    <h3>🧪 Calibration pH-mètre</h3>
+    <!-- Étape 0 -->
+    <div class="calib-step active" id="calib-s0">
+      <p>Calibration en 2 points :<br><br>
+      • <b>pH 7.0</b> — solution tampon neutre<br>
+      • <b>pH 4.0</b> — solution tampon acide<br><br>
+      Préparez les deux solutions. Rincez la sonde à l'eau distillée entre chaque étape.</p>
+      <div class="modal-actions">
+        <button class="btn btn-amber" style="flex:1" onclick="calibNext()">▶ COMMENCER</button>
+        <button class="btn btn-red"   style="flex:1" onclick="closeCalib()">✕ ANNULER</button>
+      </div>
+    </div>
+    <!-- Étape 1 : pH 7 -->
+    <div class="calib-step" id="calib-s1">
+      <p><b>ÉTAPE 1/2 — pH 7.0</b><br><br>
+      1. Rincez la sonde à l'eau distillée<br>
+      2. Plongez dans la solution tampon pH 7.0<br>
+      3. Attendez la stabilisation (~30 s)<br>
+      4. Cliquez VALIDER</p>
+      <div class="calib-live-val" id="calib-live">--- mV</div>
+      <div class="modal-actions">
+        <button class="btn btn-amber" style="flex:1" onclick="calibValidate7()">✅ VALIDER pH 7</button>
+        <button class="btn btn-red"   style="flex:1" onclick="closeCalib()">✕ ANNULER</button>
+      </div>
+    </div>
+    <!-- Étape 2 : pH 4 -->
+    <div class="calib-step" id="calib-s2">
+      <p><b>ÉTAPE 2/2 — pH 4.0</b><br><br>
+      1. Rincez à nouveau la sonde<br>
+      2. Plongez dans la solution tampon pH 4.0<br>
+      3. Attendez la stabilisation (~30 s)<br>
+      4. Cliquez TERMINER</p>
+      <div class="calib-live-val" id="calib-live2">--- mV</div>
+      <div class="modal-actions">
+        <button class="btn btn-amber" style="flex:1" onclick="calibValidate4()">✅ TERMINER</button>
+        <button class="btn btn-red"   style="flex:1" onclick="closeCalib()">✕ ANNULER</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════ -->
+<script>
+/* ══════════════════════════════════════
+   ÉTAT GLOBAL
+══════════════════════════════════════ */
+const state = {
+  port: null,
+  reader: null,
+  connected: false,
+  currentVoltage: 0,
+  currentPh: 0,
+  currentPression: 0,
+  currentTemp1: 0,
+  currentTemp2: 0,
+  // pH
+  phVolumes: [],
+  phValues: [],
+  phCalib: { done: false, slope: null, offset: null, v7: null, v4: null },
+  // Mariotte
+  marVolumes: [],
+  marPressions: [],
+  // Temp
+  tempTimes: [],
+  tempT1: [],
+  tempT2: [],
+  tempRecording: false,
+  tempStartTime: null,
+  tempNbSondes: 2,
+  tempCounter: 0,
+  tempCsvRows: [],
+};
+
+/* ══════════════════════════════════════
+   CHARTS
+══════════════════════════════════════ */
+const chartDefaults = {
+  animation: false,
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: { legend: { labels: { color: '#90a4ae', font: { family: 'Share Tech Mono', size: 11 } } } },
+  scales: {
+    x: { ticks: { color: '#546e7a', font: { family: 'Share Tech Mono', size: 10 } }, grid: { color: 'rgba(42,58,74,0.6)' } },
+    y: { ticks: { color: '#546e7a', font: { family: 'Share Tech Mono', size: 10 } }, grid: { color: 'rgba(42,58,74,0.6)' } }
+  }
+};
+
+// ── pH chart
+const ctxPh = document.getElementById('ph-chart').getContext('2d');
+const phChart = new Chart(ctxPh, {
+  type: 'line',
+  data: {
+    datasets: [
+      { label: 'pH = f(V)', data: [], borderColor: '#00e676', backgroundColor: 'rgba(0,230,118,0.08)',
+        pointBackgroundColor: '#00e676', pointRadius: 6, borderWidth: 2, tension: 0.2 },
+      { label: 'Équivalence', data: [], borderColor: '#ff5252', backgroundColor: '#ff5252',
+        pointRadius: 12, pointStyle: 'star', showLine: false }
+    ]
+  },
+  options: {
+    ...JSON.parse(JSON.stringify(chartDefaults)),
+    scales: {
+      x: { type: 'linear', min: 0, title: { display: true, text: 'Volume titrant (mL)', color: '#90a4ae', font: { family: 'Share Tech Mono' } }, ticks: { color: '#546e7a', font: { family: 'Share Tech Mono', size: 10 } }, grid: { color: 'rgba(42,58,74,0.6)' } },
+      y: { min: 0, max: 14, title: { display: true, text: 'pH', color: '#90a4ae', font: { family: 'Share Tech Mono' } }, ticks: { color: '#546e7a', font: { family: 'Share Tech Mono', size: 10 } }, grid: { color: 'rgba(42,58,74,0.6)' } }
+    },
+    plugins: { legend: { labels: { color: '#90a4ae', font: { family: 'Share Tech Mono', size: 11 } } } },
+    animation: false, responsive: true, maintainAspectRatio: false
+  }
+});
+
+// ── Mariotte chart 1
+const ctxMar1 = document.getElementById('mar-chart1').getContext('2d');
+const marChart1 = new Chart(ctxMar1, {
+  type: 'scatter',
+  data: {
+    datasets: [
+      { label: 'P = f(V)', data: [], borderColor: '#40c4ff', backgroundColor: '#40c4ff', pointRadius: 7 },
+      { label: 'P×V/V (hyperbole)', data: [], borderColor: '#ff5252', backgroundColor: 'transparent',
+        showLine: true, pointRadius: 0, borderWidth: 2, tension: 0 }
+    ]
+  },
+  options: {
+    ...JSON.parse(JSON.stringify(chartDefaults)),
+    scales: {
+      x: { min: 0, max: 65, title: { display: true, text: 'Volume V (mL)', color: '#90a4ae', font: { family: 'Share Tech Mono' } }, ticks: { color: '#546e7a', font: { family: 'Share Tech Mono', size: 10 } }, grid: { color: 'rgba(42,58,74,0.6)' } },
+      y: { title: { display: true, text: 'Pression P (kPa)', color: '#90a4ae', font: { family: 'Share Tech Mono' } }, ticks: { color: '#546e7a', font: { family: 'Share Tech Mono', size: 10 } }, grid: { color: 'rgba(42,58,74,0.6)' } }
+    },
+    plugins: { legend: { labels: { color: '#90a4ae', font: { family: 'Share Tech Mono', size: 11 } } } },
+    animation: false, responsive: true, maintainAspectRatio: false
+  }
+});
+
+// ── Mariotte chart 2
+const ctxMar2 = document.getElementById('mar-chart2').getContext('2d');
+const marChart2 = new Chart(ctxMar2, {
+  type: 'scatter',
+  data: {
+    datasets: [
+      { label: 'P = f(1/V)', data: [], borderColor: '#00e676', backgroundColor: '#00e676', pointRadius: 7 },
+      { label: 'Régression', data: [], borderColor: '#ff5252', backgroundColor: 'transparent',
+        showLine: true, pointRadius: 0, borderWidth: 2 }
+    ]
+  },
+  options: {
+    ...JSON.parse(JSON.stringify(chartDefaults)),
+    scales: {
+      x: { min: 0, title: { display: true, text: '1/V (mL⁻¹)', color: '#90a4ae', font: { family: 'Share Tech Mono' } }, ticks: { color: '#546e7a', font: { family: 'Share Tech Mono', size: 10 } }, grid: { color: 'rgba(42,58,74,0.6)' } },
+      y: { title: { display: true, text: 'Pression P (kPa)', color: '#90a4ae', font: { family: 'Share Tech Mono' } }, ticks: { color: '#546e7a', font: { family: 'Share Tech Mono', size: 10 } }, grid: { color: 'rgba(42,58,74,0.6)' } }
+    },
+    plugins: { legend: { labels: { color: '#90a4ae', font: { family: 'Share Tech Mono', size: 11 } } } },
+    animation: false, responsive: true, maintainAspectRatio: false
+  }
+});
+
+// ── Temp chart
+const ctxTemp = document.getElementById('temp-chart').getContext('2d');
+const tempChart = new Chart(ctxTemp, {
+  type: 'line',
+  data: {
+    datasets: [
+      { label: 'Sonde 1 (°C)', data: [], borderColor: '#ff5252', backgroundColor: 'rgba(255,82,82,0.05)',
+        pointRadius: 0, borderWidth: 2, tension: 0.3 },
+      { label: 'Sonde 2 (°C)', data: [], borderColor: '#40c4ff', backgroundColor: 'rgba(64,196,255,0.05)',
+        pointRadius: 0, borderWidth: 2, tension: 0.3 }
+    ]
+  },
+  options: {
+    ...JSON.parse(JSON.stringify(chartDefaults)),
+    scales: {
+      x: { type: 'linear', title: { display: true, text: 'Temps (min)', color: '#90a4ae', font: { family: 'Share Tech Mono' } }, ticks: { color: '#546e7a', font: { family: 'Share Tech Mono', size: 10 } }, grid: { color: 'rgba(42,58,74,0.6)' } },
+      y: { title: { display: true, text: 'Température (°C)', color: '#90a4ae', font: { family: 'Share Tech Mono' } }, ticks: { color: '#546e7a', font: { family: 'Share Tech Mono', size: 10 } }, grid: { color: 'rgba(42,58,74,0.6)' } }
+    },
+    plugins: { legend: { labels: { color: '#90a4ae', font: { family: 'Share Tech Mono', size: 11 } } } },
+    animation: false, responsive: true, maintainAspectRatio: false
+  }
+});
+
+/* ══════════════════════════════════════
+   NAVIGATION
+══════════════════════════════════════ */
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  document.querySelector(`[data-page="${id}"]`).classList.add('active');
+}
+
+/* ══════════════════════════════════════
+   WEB SERIAL API
+══════════════════════════════════════ */
+async function connectSerial() {
+  if (!('serial' in navigator)) {
+    alert('Web Serial API non supportée.\nUtilisez Google Chrome ou Microsoft Edge.');
+    return;
+  }
+  try {
+    state.port = await navigator.serial.requestPort();
+    await state.port.open({ baudRate: 115200 });
+    state.connected = true;
+    document.getElementById('conn-dot').classList.add('connected');
+    document.getElementById('conn-label').textContent = 'CONNECTÉ';
+    document.getElementById('conn-label').style.color = 'var(--green)';
+    document.getElementById('connect-btn').textContent = '✓ CONNECTÉ';
+    document.getElementById('connect-btn').disabled = true;
+    // Activer les boutons
+    document.getElementById('ph-add-btn').disabled = false;
+    document.getElementById('mar-add-btn').disabled = false;
+    document.getElementById('temp-start-btn').disabled = false;
+    phLog('ok', '✅ Arduino connecté');
+    marLog('ok', '✅ Arduino connecté');
+    tempLog('ok', '✅ Arduino connecté');
+    readLoop();
+  } catch (e) {
+    document.getElementById('conn-dot').classList.add('error');
+    console.error(e);
+    if (e.name !== 'NotFoundError') alert('Erreur de connexion : ' + e.message);
+  }
+}
+
+// Lecture continue du port série
+async function readLoop() {
+  const decoder = new TextDecoderStream();
+  state.port.readable.pipeTo(decoder.writable);
+  const inputStream = decoder.readable;
+  state.reader = inputStream.getReader();
+  let buffer = '';
+  try {
+    while (true) {
+      const { value, done } = await state.reader.read();
+      if (done) break;
+      buffer += value;
+      const lines = buffer.split('\n');
+      buffer = lines.pop();
+      for (const line of lines) parseLine(line.trim());
+    }
+  } catch (e) {
+    console.log('Serial read ended:', e);
+    state.connected = false;
+    document.getElementById('conn-dot').className = 'dot error';
+    document.getElementById('conn-label').textContent = 'DÉCONNECTÉ';
+    document.getElementById('conn-label').style.color = 'var(--red)';
+    document.getElementById('connect-btn').textContent = '▶ RECONNECTER';
+    document.getElementById('connect-btn').disabled = false;
+  }
+}
+
+function parseLine(line) {
+  // ── Format pH : "Voltage: 1234 mV  pH = 7.01"
+  if (line.includes('Voltage:') && line.includes('pH =')) {
+    const mV = parseFloat(line.split('Voltage:')[1]);
+    const ph = parseFloat(line.split('pH =')[1]);
+    if (!isNaN(mV)) state.currentVoltage = mV;
+    if (!isNaN(ph)) {
+      state.currentPh = state.phCalib.done
+        ? state.phCalib.slope * mV + state.phCalib.offset
+        : ph;
+      updatePhDisplay();
+    }
+  }
+  // ── Format Mariotte : "Pression: 101.3 kPa" ou "P = 101.3 kPa"
+  else if ((line.includes('Pression:') || line.includes('P =')) && line.includes('kPa')) {
+    const part = line.includes('Pression:') ? line.split('Pression:')[1] : line.split('P =')[1];
+    const v = parseFloat(part);
+    if (!isNaN(v)) { state.currentPression = v; updatePresDisplay(); }
+  }
+  // ── Format Température : "23.5,18.2" ou "23.5"
+  else if (line.match(/^-?\d+\.?\d*(,-?\d+\.?\d*)?$/)) {
+    const parts = line.split(',');
+    state.currentTemp1 = parseFloat(parts[0]) || 0;
+    state.currentTemp2 = parts[1] ? parseFloat(parts[1]) : 0;
+    updateTempDisplay();
+    if (state.tempRecording) tempAddPoint();
+  }
+}
+
+/* ══════════════════════════════════════
+   ── MODULE pH ──
+══════════════════════════════════════ */
+function updatePhDisplay() {
+  const ph = state.currentPh;
+  const el = document.getElementById('ph-display');
+  el.textContent = ph.toFixed(2);
+  el.className = 'big-val ph-color';
+  document.getElementById('volt-display').textContent = `Tension : ${state.currentVoltage.toFixed(0)} mV`;
+  // Couleur selon pH
+  const colors = ph < 4 ? '#ff5252' : ph < 6 ? '#ffab40' : ph < 8 ? '#00e676' : ph < 10 ? '#40c4ff' : '#ce93d8';
+  el.style.color = colors;
+  el.style.textShadow = `0 0 12px ${colors}66`;
+  // Calib live
+  document.getElementById('calib-live').textContent = `${state.currentVoltage.toFixed(0)} mV`;
+  document.getElementById('calib-live2').textContent = `${state.currentVoltage.toFixed(0)} mV`;
+}
+
+function phAddPoint() {
+  if (!state.connected) { alert('Arduino non connecté !'); return; }
+  const vol = parseFloat(document.getElementById('ph-vol-input').value);
+  if (isNaN(vol) || vol < 0) { alert('Volume invalide !'); return; }
+  if (state.phVolumes.length > 0 && vol <= state.phVolumes[state.phVolumes.length - 1]) {
+    alert('Le volume doit être supérieur au précédent !'); return;
+  }
+  const ph = state.currentPh;
+  state.phVolumes.push(vol);
+  state.phValues.push(ph);
+  // MAJ graphique
+  phChart.data.datasets[0].data = state.phVolumes.map((v, i) => ({ x: v, y: state.phValues[i] }));
+  phChart.update();
+  // MAJ table
+  const tb = document.getElementById('ph-table-body');
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td>${state.phVolumes.length}</td><td>${vol.toFixed(2)}</td><td>${ph.toFixed(2)}</td>`;
+  tb.appendChild(tr);
+  // Scroll to bottom
+  tb.parentElement.scrollTop = tb.parentElement.scrollHeight;
+  // MAJ volume total
+  document.getElementById('ph-vol-total').textContent = `${vol.toFixed(2)} mL`;
+  // Suggestion volume suivant
+  document.getElementById('ph-vol-input').value = (vol + 1).toFixed(1);
+  phLog('ok', `Point ajouté : V=${vol.toFixed(2)} mL, pH=${ph.toFixed(2)}`);
+}
+
+function phNewDosage() {
+  if (state.phVolumes.length > 0 && !confirm('Effacer les données actuelles ?')) return;
+  state.phVolumes = []; state.phValues = [];
+  phChart.data.datasets[0].data = [];
+  phChart.data.datasets[1].data = [];
+  phChart.update();
+  document.getElementById('ph-table-body').innerHTML = '';
+  document.getElementById('ph-vol-total').textContent = '0.0 mL';
+  document.getElementById('ph-vol-input').value = '0.0';
+  phLog('info', '🔄 Nouveau dosage démarré');
+}
+
+function phSave() {
+  if (state.phVolumes.length === 0) { alert('Aucune donnée !'); return; }
+  let csv = 'Volume (mL);pH\n';
+  state.phVolumes.forEach((v, i) => { csv += `${v.toFixed(2)};${state.phValues[i].toFixed(2)}\n`; });
+  downloadFile(csv, `dosage_${timestamp()}.csv`, 'text/csv');
+  phLog('ok', '💾 Fichier CSV téléchargé');
+}
+
+function phEquivalence() {
+  if (state.phVolumes.length < 5) { alert('Pas assez de points (minimum 5) !'); return; }
+  const V = state.phVolumes, P = state.phValues;
+  let derivs = [], vDeriv = [];
+  for (let i = 0; i < V.length - 1; i++) {
+    const dv = V[i+1] - V[i];
+    if (dv > 0) { derivs.push(Math.abs((P[i+1] - P[i]) / dv)); vDeriv.push((V[i] + V[i+1]) / 2); }
+  }
+  const idx = derivs.indexOf(Math.max(...derivs));
+  const vEq = vDeriv[idx];
+  // Interpoler le pH d'équivalence
+  let phEq = P[idx];
+  for (let i = 0; i < V.length - 1; i++) {
+    if (V[i] <= vEq && vEq <= V[i+1]) {
+      const r = (vEq - V[i]) / (V[i+1] - V[i]);
+      phEq = P[i] + r * (P[i+1] - P[i]);
+      break;
+    }
+  }
+  // Afficher sur graphique
+  phChart.data.datasets[1].data = [{ x: vEq, y: phEq }];
+  phChart.options.plugins.annotation = {};
+  phChart.update();
+  phLog('info', `📐 Équivalence : V=${vEq.toFixed(2)} mL, pH=${phEq.toFixed(2)}`);
+  alert(`POINT D'ÉQUIVALENCE\n\nVolume = ${vEq.toFixed(2)} mL\npH = ${phEq.toFixed(2)}\n\n(Maximum de |dpH/dV| = ${derivs[idx].toFixed(2)})`);
+}
+
+/* ── CALIBRATION ── */
+let calibStep = 0;
+function openCalib() {
+  if (!state.connected) { alert('Arduino non connecté !'); return; }
+  calibStep = 0;
+  document.querySelectorAll('.calib-step').forEach(s => s.classList.remove('active'));
+  document.getElementById('calib-s0').classList.add('active');
+  document.getElementById('calib-modal').classList.add('show');
+}
+function closeCalib() { document.getElementById('calib-modal').classList.remove('show'); }
+function calibNext() {
+  document.querySelectorAll('.calib-step').forEach(s => s.classList.remove('active'));
+  document.getElementById('calib-s1').classList.add('active');
+}
+function calibValidate7() {
+  state.phCalib.v7 = state.currentVoltage;
+  phLog('info', `📍 pH 7 → ${state.phCalib.v7.toFixed(0)} mV`);
+  document.querySelectorAll('.calib-step').forEach(s => s.classList.remove('active'));
+  document.getElementById('calib-s2').classList.add('active');
+}
+function calibValidate4() {
+  state.phCalib.v4 = state.currentVoltage;
+  phLog('info', `📍 pH 4 → ${state.phCalib.v4.toFixed(0)} mV`);
+  if (state.phCalib.v4 !== state.phCalib.v7) {
+    state.phCalib.slope  = (4.0 - 7.0) / (state.phCalib.v4 - state.phCalib.v7);
+    state.phCalib.offset = 7.0 - state.phCalib.slope * state.phCalib.v7;
+    state.phCalib.done   = true;
+    const badge = document.getElementById('calib-badge');
+    badge.textContent = '✅ CALIBRÉ';
+    badge.className = 'calib-badge ok';
+    phLog('ok', `✅ Calibration OK — pente=${state.phCalib.slope.toFixed(6)}`);
+    closeCalib();
+  } else {
+    alert('Erreur : les deux tensions sont identiques !');
+  }
+}
+function saveCalib() {
+  if (!state.phCalib.done) { alert('Aucune calibration à sauvegarder !'); return; }
+  const data = JSON.stringify({ ...state.phCalib, date: new Date().toISOString() }, null, 2);
+  downloadFile(data, 'calibration_pH.json', 'application/json');
+  phLog('ok', '💾 Calibration sauvegardée');
+}
+function loadCalibFile() {
+  const input = document.createElement('input');
+  input.type = 'file'; input.accept = '.json';
+  input.onchange = e => {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const d = JSON.parse(ev.target.result);
+        state.phCalib = { done: true, slope: d.slope, offset: d.offset, v7: d.voltage_ph7 || d.v7, v4: d.voltage_ph4 || d.v4 };
+        document.getElementById('calib-badge').textContent = '✅ CALIBRÉ';
+        document.getElementById('calib-badge').className = 'calib-badge ok';
+        phLog('ok', `📂 Calibration chargée (${d.date || 'N/A'})`);
+      } catch { alert('Fichier de calibration invalide !'); }
+    };
+    reader.readAsText(e.target.files[0]);
+  };
+  input.click();
+}
+function phLog(type, msg) { addLog('ph-log', type, msg); }
+
+/* ══════════════════════════════════════
+   ── MODULE MARIOTTE ──
+══════════════════════════════════════ */
+function updatePresDisplay() {
+  document.getElementById('pres-display').textContent = state.currentPression.toFixed(1);
+}
+function setMarVol(v) { document.getElementById('mar-vol-input').value = v; }
+
+function marAddPoint() {
+  if (!state.connected) { alert('Arduino non connecté !'); return; }
+  const vol = parseFloat(document.getElementById('mar-vol-input').value);
+  if (isNaN(vol) || vol <= 0) { alert('Volume invalide !'); return; }
+  const p = state.currentPression;
+  state.marVolumes.push(vol);
+  state.marPressions.push(p);
+  marUpdateCharts();
+  marUpdateStats();
+  marLog('ok', `Mesure : V=${vol} mL, P=${p.toFixed(1)} kPa, P×V=${(p*vol).toFixed(1)}`);
+}
+
+function marUpdateCharts() {
+  const V = state.marVolumes, P = state.marPressions;
+  // Chart 1 : points
+  marChart1.data.datasets[0].data = V.map((v, i) => ({ x: v, y: P[i] }));
+  marChart1.update();
+  // Chart 2 : P = f(1/V)
+  marChart2.data.datasets[0].data = V.map((v, i) => ({ x: 1/v, y: P[i] }));
+  marChart2.update();
+}
+
+function marUpdateStats() {
+  const V = state.marVolumes, P = state.marPressions;
+  if (V.length === 0) return;
+  const pvVals = V.map((v, i) => v * P[i]);
+  const pvMoy = pvVals.reduce((a, b) => a + b, 0) / pvVals.length;
+  document.getElementById('mar-n').textContent = V.length;
+  document.getElementById('mar-pv').textContent = pvMoy.toFixed(0) + ' kPa·mL';
+  // R² si ≥ 3 points
+  if (V.length >= 3) {
+    const invV = V.map(v => 1/v);
+    const r2 = computeR2(invV, P);
+    document.getElementById('mar-r2').textContent = r2.toFixed(4);
+  }
+}
+
+function marRegression() {
+  const V = state.marVolumes, P = state.marPressions;
+  if (V.length < 3) { alert('Pas assez de points !'); return; }
+  const pvVals = V.map((v, i) => v * P[i]);
+  const pvMoy  = pvVals.reduce((a, b) => a + b, 0) / pvVals.length;
+  // Hyperbole
+  const vArr = Array.from({length: 60}, (_, i) => 1 + i);
+  marChart1.data.datasets[1].data = vArr.map(v => ({ x: v, y: pvMoy / v }));
+  marChart1.update();
+  // Régression P=f(1/V)
+  const invV = V.map(v => 1/v);
+  const { slope, intercept } = linearReg(invV, P);
+  const xArr = Array.from({length: 50}, (_, i) => 0.001 + i * 0.001);
+  marChart2.data.datasets[1].data = xArr.map(x => ({ x, y: slope * x + intercept }));
+  marChart2.data.datasets[1].label = `P = ${slope.toFixed(1)}/V + ${intercept.toFixed(1)}`;
+  marChart2.update();
+  const r2 = computeR2(invV, P);
+  marLog('ok', `Régressions tracées — R²=${r2.toFixed(4)}`);
+  alert(`Régression P = f(1/V)\n\nP = ${slope.toFixed(1)} × (1/V) + ${intercept.toFixed(1)}\nR² = ${r2.toFixed(4)}\nP×V moyen = ${pvMoy.toFixed(1)} kPa·mL\n\n${r2 > 0.99 ? '✅ Excellente linéarité !' : r2 > 0.95 ? '✅ Bonne linéarité' : '⚠ Linéarité moyenne'}`);
+}
+
+function marNewSerie() {
+  if (state.marVolumes.length > 0 && !confirm('Effacer les données ?')) return;
+  state.marVolumes = []; state.marPressions = [];
+  marChart1.data.datasets.forEach(d => d.data = []);
+  marChart2.data.datasets.forEach(d => d.data = []);
+  marChart1.update(); marChart2.update();
+  document.getElementById('mar-n').textContent = '0';
+  document.getElementById('mar-pv').textContent = '---';
+  document.getElementById('mar-r2').textContent = '---';
+  marLog('info', '🔄 Nouvelle série démarrée');
+}
+
+function marSave() {
+  if (state.marVolumes.length === 0) { alert('Aucune donnée !'); return; }
+  let csv = 'Volume (mL);Pression (kPa);P×V (kPa.mL);1/V (mL-1)\n';
+  state.marVolumes.forEach((v, i) => {
+    const p = state.marPressions[i];
+    csv += `${v.toFixed(2)};${p.toFixed(2)};${(p*v).toFixed(2)};${(1/v).toFixed(6)}\n`;
+  });
+  downloadFile(csv, `mariotte_${timestamp()}.csv`, 'text/csv');
+  marLog('ok', '💾 Fichier CSV téléchargé');
+}
+function marLog(type, msg) { addLog('mar-log', type, msg); }
+
+/* ══════════════════════════════════════
+   ── MODULE TEMPÉRATURE ──
+══════════════════════════════════════ */
+function updateTempDisplay() {
+  document.getElementById('temp1-display').textContent = state.currentTemp1.toFixed(1);
+  if (state.tempNbSondes === 2) {
+    document.getElementById('temp2-display').textContent = state.currentTemp2.toFixed(1);
+    document.getElementById('delta-display').textContent =
+      `${Math.abs(state.currentTemp2 - state.currentTemp1).toFixed(1)}°C`;
+  }
+}
+
+function setNbSondes(n) {
+  state.tempNbSondes = n;
+  document.getElementById('temp2-zone').style.display = n === 2 ? 'block' : 'none';
+  tempChart.data.datasets[1].hidden = n !== 2;
+  tempChart.update();
+}
+
+function tempStart() {
+  if (!state.connected) { alert('Arduino non connecté !'); return; }
+  state.tempRecording = true;
+  state.tempStartTime = Date.now();
+  state.tempCounter = 0;
+  state.tempCsvRows = [];
+  document.getElementById('temp-start-btn').disabled = true;
+  document.getElementById('temp-stop-btn').disabled = false;
+  document.getElementById('temp-rec-dot').style.color = 'var(--red)';
+  document.getElementById('temp-rec-lbl').textContent = 'REC';
+  // Timer durée
+  state.tempTimer = setInterval(() => {
+    const sec = Math.floor((Date.now() - state.tempStartTime) / 1000);
+    const m = Math.floor(sec / 60), s = sec % 60;
+    document.getElementById('temp-dur').textContent = `${m}:${s.toString().padStart(2,'0')}`;
+  }, 1000);
+  tempLog('ok', '▶ Enregistrement démarré');
+}
+
+function tempStop() {
+  state.tempRecording = false;
+  clearInterval(state.tempTimer);
+  document.getElementById('temp-start-btn').disabled = false;
+  document.getElementById('temp-stop-btn').disabled = true;
+  document.getElementById('temp-rec-dot').style.color = 'var(--text-dim)';
+  document.getElementById('temp-rec-lbl').textContent = 'ARRÊTÉ';
+  tempLog('info', `■ Enregistrement arrêté — ${state.tempCounter} mesures`);
+}
+
+function tempAddPoint() {
+  const t = (Date.now() - state.tempStartTime) / 60000; // minutes
+  state.tempTimes.push(t);
+  state.tempT1.push(state.currentTemp1);
+  if (state.tempNbSondes === 2) state.tempT2.push(state.currentTemp2);
+  state.tempCounter++;
+  state.tempCsvRows.push([t.toFixed(4), state.currentTemp1.toFixed(2), state.currentTemp2.toFixed(2), Math.abs(state.currentTemp2-state.currentTemp1).toFixed(2)]);
+  // Graphique
+  tempChart.data.datasets[0].data = state.tempTimes.map((t, i) => ({ x: t, y: state.tempT1[i] }));
+  if (state.tempNbSondes === 2)
+    tempChart.data.datasets[1].data = state.tempTimes.map((t, i) => ({ x: t, y: state.tempT2[i] }));
+  tempChart.update();
+  // Table (dernières 20 lignes)
+  document.getElementById('temp-n').textContent = state.tempCounter;
+  const tb = document.getElementById('temp-table-body');
+  if (state.tempCounter % 2 === 0) {
+    const tr = document.createElement('tr');
+    const m = Math.floor(t), s = Math.round((t - m) * 60);
+    tr.innerHTML = `<td>${m}:${s.toString().padStart(2,'0')}</td><td>${state.currentTemp1.toFixed(1)}</td><td>${state.tempNbSondes===2?state.currentTemp2.toFixed(1):'—'}</td><td>${state.tempNbSondes===2?Math.abs(state.currentTemp2-state.currentTemp1).toFixed(1):'—'}</td>`;
+    tb.appendChild(tr);
+    if (tb.children.length > 20) tb.removeChild(tb.firstChild);
+    tb.parentElement.scrollTop = tb.parentElement.scrollHeight;
+  }
+}
+
+function tempNew() {
+  if (state.tempRecording) tempStop();
+  state.tempTimes = []; state.tempT1 = []; state.tempT2 = [];
+  state.tempCounter = 0; state.tempCsvRows = [];
+  tempChart.data.datasets.forEach(d => d.data = []);
+  tempChart.update();
+  document.getElementById('temp-table-body').innerHTML = '';
+  document.getElementById('temp-n').textContent = '0';
+  document.getElementById('temp-dur').textContent = '0:00';
+  tempLog('info', '🔄 Nouvelle acquisition');
+}
+
+function tempSave() {
+  if (state.tempTimes.length === 0) { alert('Aucune donnée !'); return; }
+  let csv = 'Temps (min);Sonde 1 (°C);Sonde 2 (°C);ΔT (°C)\n';
+  state.tempCsvRows.forEach(r => { csv += r.join(';') + '\n'; });
+  downloadFile(csv, `temperature_${timestamp()}.csv`, 'text/csv');
+  tempLog('ok', '💾 CSV téléchargé');
+}
+function tempLog(type, msg) { addLog('temp-log', type, msg); }
+
+/* ══════════════════════════════════════
+   UTILITAIRES
+══════════════════════════════════════ */
+function addLog(id, type, msg) {
+  const box = document.getElementById(id);
+  const div = document.createElement('div');
+  const now = new Date();
+  const t = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}:${now.getSeconds().toString().padStart(2,'0')}`;
+  div.className = 'log-line ' + (type || '');
+  div.textContent = `[${t}] ${msg}`;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+}
+
+function downloadFile(content, filename, mime) {
+  const blob = new Blob([content], { type: mime });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function timestamp() {
+  const d = new Date();
+  return `${d.getFullYear()}${(d.getMonth()+1).toString().padStart(2,'0')}${d.getDate().toString().padStart(2,'0')}_${d.getHours().toString().padStart(2,'0')}${d.getMinutes().toString().padStart(2,'0')}`;
+}
+
+function linearReg(x, y) {
+  const n = x.length;
+  const sumX = x.reduce((a,b)=>a+b,0), sumY = y.reduce((a,b)=>a+b,0);
+  const sumXY = x.reduce((acc,xi,i)=>acc+xi*y[i],0);
+  const sumX2 = x.reduce((acc,xi)=>acc+xi*xi,0);
+  const slope     = (n*sumXY - sumX*sumY) / (n*sumX2 - sumX*sumX);
+  const intercept = (sumY - slope*sumX) / n;
+  return { slope, intercept };
+}
+
+function computeR2(x, y) {
+  const { slope, intercept } = linearReg(x, y);
+  const mean = y.reduce((a,b)=>a+b,0) / y.length;
+  const ssTot = y.reduce((acc,yi)=>acc+(yi-mean)**2, 0);
+  const ssRes = y.reduce((acc,yi,i)=>acc+(yi-(slope*x[i]+intercept))**2, 0);
+  return 1 - ssRes/ssTot;
+}
+
+// Vérifier support Web Serial au démarrage
+window.addEventListener('load', () => {
+  if (!('serial' in navigator)) {
+    document.getElementById('conn-label').textContent = 'CHROME/EDGE REQUIS';
+    document.getElementById('conn-label').style.color = 'var(--red)';
+    document.getElementById('connect-btn').textContent = '⚠ NON SUPPORTÉ';
+    document.getElementById('connect-btn').disabled = true;
+  }
+});
+</script>
+</body>
+</html>
