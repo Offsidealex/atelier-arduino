@@ -529,6 +529,49 @@ table.data-table tr:last-child td { color: var(--green); }
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: var(--border); }
+
+/* ── OSCILLOSCOPE ── */
+.oscilo-screen-wrap {
+  background: #4466aa;
+  border-radius: 6px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+.oscilo-title-bar {
+  font-family: var(--sans);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #fff;
+  text-align: center;
+  padding: 4px 0 8px;
+  letter-spacing: 1px;
+}
+.oscilo-screen-border { background: #000; padding: 10px; border-radius: 2px; }
+#oscilo-canvas { display: block; width: 100%; cursor: crosshair; }
+.oscilo-info-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 4px 2px;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: #fff;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+.oscilo-knob-section { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
+.oscilo-knob-col { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.oscilo-knob-label { font-family: var(--mono); font-size: 0.65rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; text-align: center; }
+.oscilo-knob-val { font-family: var(--mono); font-size: 0.75rem; font-weight: bold; text-align: center; padding: 3px 8px; background: var(--bg); border: 1px solid var(--border); border-radius: 2px; min-width: 80px; }
+canvas.knob-canvas { cursor: pointer; display: block; }
+.module-card.oscilo::before { background: #7c4dff; }
+.module-card.oscilo h2 { color: #b39ddb; }
+.module-card.oscilo .launch-btn { background: #7c4dff; color: #fff; }
+.module-card.oscilo:hover { box-shadow: 0 8px 32px rgba(124,77,255,0.15); }
+.tab-oscilo { color: #b39ddb !important; }
+.tab-oscilo.active { border-bottom-color: #7c4dff !important; color: #b39ddb !important; }
 </style>
 </head>
 <body>
@@ -555,6 +598,7 @@ table.data-table tr:last-child td { color: var(--green); }
   <button class="nav-tab tab-ph"       onclick="showPage('ph')"       data-page="ph">🧪 Dosage pH</button>
   <button class="nav-tab tab-mariotte" onclick="showPage('mariotte')" data-page="mariotte">🎈 Mariotte</button>
   <button class="nav-tab tab-temp"     onclick="showPage('temp')"     data-page="temp">🌡️ Température</button>
+  <button class="nav-tab tab-oscilo"   onclick="showPage('oscilo')"   data-page="oscilo">📺 Oscilloscope</button>
 </div>
 
 <!-- ═══════════════════ PAGE HOME ═══════════════════ -->
@@ -577,6 +621,12 @@ table.data-table tr:last-child td { color: var(--green); }
       <h2>Température</h2>
       <p>Sondes DS18B20<br>1 ou 2 sondes, temps réel<br>Enregistrement CSV</p>
       <button class="launch-btn">▶ Lancer le TP</button>
+    </div>
+    <div class="module-card oscilo" onclick="showPage('oscilo')">
+      <span class="icon">📺</span>
+      <h2>Oscilloscope</h2>
+      <p>Simulateur signal sinusoïdal<br>Réglages Volts/div & Temps/div<br>Son via haut-parleur</p>
+      <button class="launch-btn">▶ Lancer</button>
     </div>
   </div>
   <p class="home-warning">⚠ Requiert Google Chrome ou Microsoft Edge — Web Serial API</p>
@@ -1068,6 +1118,8 @@ function showPage(id) {
   document.getElementById('page-' + id).classList.add('active');
   document.querySelector(`[data-page="${id}"]`).classList.add('active');
   if (id === 'mariotte') setTimeout(resizeMariotteCharts, 30);
+  if (id === 'oscilo')   setTimeout(osciloStartAnim, 50);
+  else                   osciloStopAnim();
 }
 
 /* ══════════════════════════════════════
@@ -1766,6 +1818,8 @@ window.addEventListener('load', () => {
     document.getElementById('connect-btn').disabled = true;
   }
   resizeMariotteCharts();
+  osciloInitKnobs();
+  osciloUpdateMeasures();
 });
 
 window.addEventListener('resize', resizeMariotteCharts);
@@ -1774,6 +1828,352 @@ function resizeMariotteCharts() {
   marChart1.resize();
   marChart2.resize();
 }
+
+/* ══════════════════════════════════════
+   OSCILLOSCOPE SIMULATOR
+══════════════════════════════════════ */
+const OSCILO = {
+  ueff: 6.0, freq: 50, phaseOffset: 0, verticalOffset: 0,
+  divH: 10, divV: 8,
+  echellesVolts: [5, 2, 1, 0.5, 0.2, 0.1, 0.05, 0.02, 0.01, 0.005],
+  echellesTemps: [100000,50000,25000,10000,5000,2500,1000,500,250,100,50,25,10,5,2.5,1,0.5,0.25,0.1,0.05,0.025,0.01,0.005,0.0025,0.001,0.0005,0.00025,0.0001,0.00005,0.000025,0.00001,0.000005],
+  posValues: Array.from({length:21}, (_,i) => -50 + i*5),
+  iVolts: 0, iTemps: 13, iPosH: 10, iPosV: 10,
+  audioCtx: null, oscillator: null, gainNode: null, soundPlaying: false,
+  animId: null, active: false
+};
+
+function osciloFmtTime(ms) {
+  if (ms >= 1000) return `${(ms/1000).toFixed(0)} s`;
+  if (ms >= 1)    return `${Number.isInteger(ms) ? ms : ms} ms`;
+  if (ms >= 0.001)return `${(ms*1000).toFixed(0)} µs`;
+  return `${(ms*1000000).toFixed(0)} ns`;
+}
+function osciloFmtVolts(v) { return v >= 1 ? `${v} V` : `${v*1000} mV`; }
+
+class OsciloKnob {
+  constructor(canvasId, values, initIndex, color, onchange) {
+    this.canvas = document.getElementById(canvasId);
+    this.ctx = this.canvas.getContext('2d');
+    this.values = values; this.index = initIndex; this.color = color; this.onchange = onchange;
+    this.w = this.canvas.width; this.h = this.canvas.height;
+    this.cx = this.w/2; this.cy = this.h/2 - 6;
+    this.r = Math.min(this.w, this.h)/2 - 10;
+    this.draw();
+    this.canvas.addEventListener('click', () => this.increment());
+    this.canvas.addEventListener('contextmenu', e => { e.preventDefault(); this.decrement(); });
+    this.canvas.addEventListener('wheel', e => { e.preventDefault(); e.deltaY < 0 ? this.increment() : this.decrement(); }, {passive:false});
+  }
+  draw() {
+    const ctx = this.ctx;
+    ctx.clearRect(0,0,this.w,this.h);
+    ctx.beginPath(); ctx.arc(this.cx+2, this.cy+2, this.r, 0, Math.PI*2);
+    ctx.fillStyle='rgba(0,0,0,0.35)'; ctx.fill();
+    ctx.beginPath(); ctx.arc(this.cx, this.cy, this.r, 0, Math.PI*2);
+    ctx.fillStyle=this.color; ctx.fill();
+    ctx.strokeStyle='#333'; ctx.lineWidth=2; ctx.stroke();
+    const angleDeg = -135 + (this.index / Math.max(1, this.values.length-1)) * 270;
+    const ar = angleDeg * Math.PI / 180;
+    const tipX = this.cx + (this.r-8)*Math.cos(ar);
+    const tipY = this.cy + (this.r-8)*Math.sin(ar);
+    const bw = this.r < 25 ? 4 : 6;
+    const px = Math.cos(ar+Math.PI/2), py = Math.sin(ar+Math.PI/2);
+    ctx.beginPath();
+    ctx.moveTo(this.cx+bw*px, this.cy+bw*py);
+    ctx.lineTo(this.cx-bw*px, this.cy-bw*py);
+    ctx.lineTo(tipX, tipY);
+    ctx.closePath(); ctx.fillStyle='#000'; ctx.fill();
+    ctx.beginPath(); ctx.arc(this.cx,this.cy,3,0,Math.PI*2);
+    ctx.fillStyle='#222'; ctx.fill();
+    ctx.fillStyle='rgba(160,160,160,0.6)'; ctx.font='7px monospace'; ctx.textAlign='center';
+    ctx.fillText('clic +  |  clic droit −', this.cx, this.cy+this.r+14);
+  }
+  increment() { if(this.index<this.values.length-1){this.index++;this.draw();this.onchange(this.values[this.index]);} }
+  decrement() { if(this.index>0){this.index--;this.draw();this.onchange(this.values[this.index]);} }
+  setIndex(i) { this.index=Math.max(0,Math.min(this.values.length-1,i));this.draw(); }
+}
+
+let knobVolts, knobTemps, knobPosH, knobPosV;
+
+function osciloInitKnobs() {
+  knobPosV = new OsciloKnob('knob-posv', OSCILO.posValues, OSCILO.iPosV, '#cc7777', v => {
+    OSCILO.iPosV = OSCILO.posValues.indexOf(v);
+    OSCILO.verticalOffset = v * OSCILO.echellesVolts[OSCILO.iVolts] * 0.02;
+    document.getElementById('knob-posv-val').textContent = (v>=0?'+':'')+v;
+  });
+  knobVolts = new OsciloKnob('knob-volts', OSCILO.echellesVolts, OSCILO.iVolts, '#cc6666', v => {
+    OSCILO.iVolts = OSCILO.echellesVolts.indexOf(v); osciloUpdateLabels();
+  });
+  knobPosH = new OsciloKnob('knob-posh', OSCILO.posValues, OSCILO.iPosH, '#558888', v => {
+    OSCILO.iPosH = OSCILO.posValues.indexOf(v);
+    OSCILO.phaseOffset = v * OSCILO.echellesTemps[OSCILO.iTemps] * 0.05;
+    document.getElementById('knob-posh-val').textContent = (v>=0?'+':'')+v;
+  });
+  knobTemps = new OsciloKnob('knob-temps', OSCILO.echellesTemps, OSCILO.iTemps, '#446688', v => {
+    OSCILO.iTemps = OSCILO.echellesTemps.indexOf(v); osciloUpdateLabels();
+  });
+  osciloUpdateLabels();
+}
+
+function osciloUpdateLabels() {
+  const fv = osciloFmtVolts(OSCILO.echellesVolts[OSCILO.iVolts]);
+  const ft = osciloFmtTime(OSCILO.echellesTemps[OSCILO.iTemps]);
+  document.getElementById('knob-volts-val').textContent = fv;
+  document.getElementById('knob-temps-val').textContent = ft;
+  document.getElementById('oscilo-ch1-label').textContent  = 'CH1  ' + fv;
+  document.getElementById('oscilo-time-label').textContent = 'M  '   + ft;
+}
+
+function osciloDrawFrame() {
+  const canvas = document.getElementById('oscilo-canvas');
+  if (!canvas) return;
+  const W = canvas.width, H = canvas.height;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle='#000'; ctx.fillRect(0,0,W,H);
+  const vDivPx = H/OSCILO.divV, tDivPx = W/OSCILO.divH;
+  // sous-divisions
+  ctx.strokeStyle='rgba(90,90,90,0.6)'; ctx.lineWidth=0.5;
+  for(let i=0;i<=OSCILO.divH*5;i++){const x=i*tDivPx/5;ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+  for(let i=0;i<=OSCILO.divV*5;i++){const y=i*vDivPx/5;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+  // divisions principales
+  ctx.strokeStyle='rgba(255,255,255,0.4)'; ctx.lineWidth=1;
+  for(let i=0;i<=OSCILO.divH;i++){const x=i*tDivPx;ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+  for(let i=0;i<=OSCILO.divV;i++){const y=i*vDivPx;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+  // axes centraux
+  ctx.strokeStyle='rgba(255,255,255,0.7)'; ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(0,H/2);ctx.lineTo(W,H/2);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(W/2,0);ctx.lineTo(W/2,H);ctx.stroke();
+  // signal
+  const vDiv = OSCILO.echellesVolts[OSCILO.iVolts];
+  const tDiv = OSCILO.echellesTemps[OSCILO.iTemps];
+  const yMax = vDiv * (OSCILO.divV/2);
+  const xMaxMs = tDiv * OSCILO.divH;
+  const umax = OSCILO.ueff * Math.sqrt(2);
+  ctx.strokeStyle='#ff2222'; ctx.lineWidth=2.5;
+  ctx.shadowColor='rgba(255,60,60,0.5)'; ctx.shadowBlur=5;
+  ctx.beginPath();
+  const pts = 1500;
+  for(let i=0;i<=pts;i++){
+    const tMs = (i/pts)*xMaxMs + OSCILO.phaseOffset;
+    const u = umax*Math.sin(2*Math.PI*OSCILO.freq*(tMs/1000)) + OSCILO.verticalOffset;
+    const x = (i/pts)*W;
+    const y = H/2 - (u/yMax)*(H/2);
+    i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+  }
+  ctx.stroke(); ctx.shadowBlur=0;
+}
+
+function osciloAnimLoop() {
+  if(!OSCILO.active) return;
+  osciloDrawFrame();
+  OSCILO.animId = requestAnimationFrame(osciloAnimLoop);
+}
+
+function osciloStartAnim() {
+  if(OSCILO.active) return;
+  const canvas = document.getElementById('oscilo-canvas');
+  if(canvas) canvas.width = canvas.offsetWidth || 800;
+  OSCILO.active = true;
+  osciloAnimLoop();
+}
+function osciloStopAnim() {
+  OSCILO.active = false;
+  if(OSCILO.animId){cancelAnimationFrame(OSCILO.animId);OSCILO.animId=null;}
+}
+
+function osciloUpdateUeff() {
+  const v = parseFloat(document.getElementById('oscilo-ueff').value)||6;
+  OSCILO.ueff = Math.max(0,Math.min(15,v));
+  const umax = (OSCILO.ueff*Math.sqrt(2)).toFixed(2);
+  document.getElementById('oscilo-umax-display').textContent = umax;
+  document.getElementById('oscilo-m-ueff').textContent = OSCILO.ueff.toFixed(2)+' V';
+  document.getElementById('oscilo-m-umax').textContent = umax+' V';
+  osciloUpdateMeasures();
+  if(OSCILO.soundPlaying&&OSCILO.gainNode) OSCILO.gainNode.gain.value = OSCILO.ueff/15*0.4;
+}
+function osciloChangeUeff(d){
+  const el=document.getElementById('oscilo-ueff');
+  el.value=Math.max(0,Math.min(15,parseFloat(el.value)+d)).toFixed(1);
+  osciloUpdateUeff();
+}
+function osciloUpdateFreq(){
+  const f=parseInt(document.getElementById('oscilo-freq').value)||50;
+  OSCILO.freq=Math.max(1,Math.min(20000,f));
+  if(OSCILO.soundPlaying&&OSCILO.oscillator) OSCILO.oscillator.frequency.value=OSCILO.freq;
+  osciloUpdateMeasures();
+}
+function osciloChangeFreq(d){
+  const el=document.getElementById('oscilo-freq');
+  el.value=Math.max(1,Math.min(20000,parseInt(el.value)+d));
+  osciloUpdateFreq();
+}
+function osciloSetFreq(f){document.getElementById('oscilo-freq').value=f;osciloUpdateFreq();}
+function osciloUpdateMeasures(){
+  const T=1/OSCILO.freq*1000;
+  document.getElementById('oscilo-m-freq').textContent = OSCILO.freq<1000?OSCILO.freq+' Hz':(OSCILO.freq/1000).toFixed(1)+' kHz';
+  document.getElementById('oscilo-m-period').textContent = T<1?(T*1000).toFixed(2)+' µs':T<1000?T.toFixed(2)+' ms':(T/1000).toFixed(2)+' s';
+}
+
+function osciloToggleSound(){OSCILO.soundPlaying?osciloStopSound():osciloStartSound();}
+function osciloStartSound(){
+  try{
+    if(!OSCILO.audioCtx) OSCILO.audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+    OSCILO.oscillator=OSCILO.audioCtx.createOscillator();
+    OSCILO.gainNode=OSCILO.audioCtx.createGain();
+    OSCILO.oscillator.type='sine';
+    OSCILO.oscillator.frequency.value=OSCILO.freq;
+    OSCILO.gainNode.gain.value=OSCILO.ueff/15*0.4;
+    OSCILO.oscillator.connect(OSCILO.gainNode);
+    OSCILO.gainNode.connect(OSCILO.audioCtx.destination);
+    OSCILO.oscillator.start();
+    OSCILO.soundPlaying=true;
+    const btn=document.getElementById('oscilo-sound-btn');
+    btn.textContent='🔇 ARRÊTER LE SON'; btn.className='btn btn-red';
+  }catch(e){console.error(e);}
+}
+function osciloStopSound(){
+  try{if(OSCILO.oscillator){OSCILO.oscillator.stop();OSCILO.oscillator.disconnect();OSCILO.oscillator=null;}
+  if(OSCILO.gainNode){OSCILO.gainNode.disconnect();OSCILO.gainNode=null;}}catch(e){}
+  OSCILO.soundPlaying=false;
+  const btn=document.getElementById('oscilo-sound-btn');
+  btn.textContent='🔊 ÉCOUTER LE SON'; btn.className='btn btn-green';
+}
+
+function osciloReset(){
+  osciloStopSound();
+  OSCILO.ueff=6.0;OSCILO.freq=50;OSCILO.phaseOffset=0;OSCILO.verticalOffset=0;
+  OSCILO.iVolts=0;OSCILO.iTemps=13;OSCILO.iPosH=10;OSCILO.iPosV=10;
+  document.getElementById('oscilo-ueff').value='6.0';
+  document.getElementById('oscilo-freq').value='50';
+  if(knobVolts)knobVolts.setIndex(0); if(knobTemps)knobTemps.setIndex(13);
+  if(knobPosH){knobPosH.setIndex(10);document.getElementById('knob-posh-val').textContent='0';}
+  if(knobPosV){knobPosV.setIndex(10);document.getElementById('knob-posv-val').textContent='0';}
+  document.getElementById('oscilo-umax-display').textContent=(6*Math.sqrt(2)).toFixed(2);
+  osciloUpdateLabels();osciloUpdateUeff();osciloUpdateMeasures();
+}
 </script>
+<!-- ═══════════════════ PAGE OSCILLOSCOPE ═══════════════════ -->
+<div class="page" id="page-oscilo">
+
+  <!-- GAUCHE : contrôles -->
+  <div class="panel-left">
+
+    <!-- Tension efficace -->
+    <div class="widget">
+      <div class="widget-header">⚡ Tension efficace Ueff</div>
+      <div class="widget-body">
+        <div style="display:flex;align-items:center;gap:8px">
+          <button class="btn btn-red" style="margin:0;padding:6px 14px;font-size:1.1rem" onclick="osciloChangeUeff(-0.1)">−</button>
+          <input type="number" id="oscilo-ueff" value="6.0" min="0" max="15" step="0.1"
+            style="flex:1;text-align:center;font-family:var(--mono);font-size:1.1rem;font-weight:bold"
+            oninput="osciloUpdateUeff()">
+          <button class="btn btn-green" style="margin:0;padding:6px 14px;font-size:1.1rem" onclick="osciloChangeUeff(0.1)">+</button>
+        </div>
+        <div style="text-align:center;font-family:var(--mono);font-size:0.7rem;color:var(--text-dim);margin-top:6px">
+          Umax = <span id="oscilo-umax-display">8.49</span> V
+        </div>
+      </div>
+    </div>
+
+    <!-- Fréquence -->
+    <div class="widget">
+      <div class="widget-header">〰️ Fréquence</div>
+      <div class="widget-body">
+        <div style="display:flex;align-items:center;gap:8px">
+          <button class="btn btn-red" style="margin:0;padding:6px 14px;font-size:1.1rem" onclick="osciloChangeFreq(-10)">−</button>
+          <input type="number" id="oscilo-freq" value="50" min="1" max="20000" step="1"
+            style="flex:1;text-align:center;font-family:var(--mono);font-size:1.1rem;font-weight:bold"
+            oninput="osciloUpdateFreq()">
+          <button class="btn btn-green" style="margin:0;padding:6px 14px;font-size:1.1rem" onclick="osciloChangeFreq(10)">+</button>
+        </div>
+        <div style="text-align:center;font-family:var(--mono);font-size:0.7rem;color:var(--text-dim);margin-top:4px">Hz</div>
+        <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
+          <button class="btn" style="flex:1;margin:0;font-size:0.7rem;padding:4px;background:var(--bg3);color:var(--text)" onclick="osciloSetFreq(50)">50 Hz</button>
+          <button class="btn" style="flex:1;margin:0;font-size:0.7rem;padding:4px;background:var(--bg3);color:var(--text)" onclick="osciloSetFreq(100)">100 Hz</button>
+          <button class="btn" style="flex:1;margin:0;font-size:0.7rem;padding:4px;background:var(--bg3);color:var(--text)" onclick="osciloSetFreq(440)">440 Hz</button>
+          <button class="btn" style="flex:1;margin:0;font-size:0.7rem;padding:4px;background:var(--bg3);color:var(--text)" onclick="osciloSetFreq(1000)">1 kHz</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Son -->
+    <div class="widget">
+      <div class="widget-header">🔊 Audio</div>
+      <div class="widget-body">
+        <button class="btn btn-green" id="oscilo-sound-btn" onclick="osciloToggleSound()" style="width:100%">🔊 ÉCOUTER LE SON</button>
+        <div style="font-family:var(--mono);font-size:0.65rem;color:var(--text-dim);margin-top:6px;text-align:center">
+          Web Audio API — signal sinusoïdal
+        </div>
+      </div>
+    </div>
+
+    <!-- Réglages oscilloscope -->
+    <div class="widget">
+      <div class="widget-header">🎛️ Réglages oscilloscope</div>
+      <div class="widget-body" style="padding:10px">
+        <div class="oscilo-knob-section">
+          <!-- Col 1 : Position V + Volts/div -->
+          <div class="oscilo-knob-col">
+            <div class="oscilo-knob-label">Position Y</div>
+            <canvas class="knob-canvas" id="knob-posv" width="80" height="80"></canvas>
+            <div class="oscilo-knob-val" id="knob-posv-val" style="color:#ff8888">↑↓</div>
+
+            <div class="oscilo-knob-label" style="margin-top:12px">Volts / div</div>
+            <canvas class="knob-canvas" id="knob-volts" width="110" height="110"></canvas>
+            <div class="oscilo-knob-val" id="knob-volts-val" style="color:#ff8888">5 V</div>
+          </div>
+          <!-- Col 2 : Position H + Time/div -->
+          <div class="oscilo-knob-col">
+            <div class="oscilo-knob-label">Position X</div>
+            <canvas class="knob-canvas" id="knob-posh" width="80" height="80"></canvas>
+            <div class="oscilo-knob-val" id="knob-posh-val" style="color:#66dddd">← →</div>
+
+            <div class="oscilo-knob-label" style="margin-top:12px">Sec / div</div>
+            <canvas class="knob-canvas" id="knob-temps" width="110" height="110"></canvas>
+            <div class="oscilo-knob-val" id="knob-temps-val" style="color:#66dddd">5 ms</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="widget">
+      <div class="widget-header">⚙️ Actions</div>
+      <div class="widget-body">
+        <button class="btn btn-amber" onclick="osciloReset()" style="width:100%">🔄 RÉINITIALISER</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- DROITE : écran oscilloscope -->
+  <div class="panel-right">
+    <div class="oscilo-screen-wrap">
+      <div class="oscilo-title-bar">Lycée Denis Diderot — Simulateur Oscilloscope</div>
+      <div class="oscilo-screen-border">
+        <canvas id="oscilo-canvas" height="560"></canvas>
+      </div>
+      <div class="oscilo-info-bar">
+        <span id="oscilo-ch1-label">CH1 &nbsp; 5 V</span>
+        <span style="color:#aac4ff;font-size:0.7rem">▶ SINUSOÏDE — 1 voie</span>
+        <span id="oscilo-time-label">M &nbsp; 5 ms</span>
+      </div>
+    </div>
+
+    <!-- Mesures -->
+    <div class="widget" style="margin-top:14px">
+      <div class="widget-header">📐 Mesures calculées</div>
+      <div class="widget-body">
+        <div class="stats-row" style="grid-template-columns:repeat(4,1fr)">
+          <div class="stat-cell"><div class="stat-val" id="oscilo-m-ueff">6.00 V</div><div class="stat-lbl">Ueff</div></div>
+          <div class="stat-cell"><div class="stat-val" id="oscilo-m-umax">8.49 V</div><div class="stat-lbl">Umax</div></div>
+          <div class="stat-cell"><div class="stat-val" id="oscilo-m-freq">50 Hz</div><div class="stat-lbl">Fréquence</div></div>
+          <div class="stat-cell"><div class="stat-val" id="oscilo-m-period">20.0 ms</div><div class="stat-lbl">Période T</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
