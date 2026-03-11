@@ -361,6 +361,7 @@ input:focus { border-color: var(--green); box-shadow: 0 0 8px rgba(0,230,118,0.2
   transition: all .15s;
 }
 .quick-btn:hover { border-color: var(--blue); color: var(--blue); }
+.quick-btn.mar-ref { border-color: rgba(0,230,118,0.4); color: var(--green); }
 
 /* ── TABLE DONNÉES ── */
 .data-table-wrap {
@@ -661,6 +662,7 @@ table.data-table tr:last-child td { color: var(--green); }
 <!-- ═══════════════════ PAGE MARIOTTE ═══════════════════ -->
 <div class="page" id="page-mariotte">
   <div class="panel-left">
+
     <!-- Pression -->
     <div class="widget">
       <div class="widget-header">📊 Pression Actuelle</div>
@@ -675,18 +677,20 @@ table.data-table tr:last-child td { color: var(--green); }
       <div class="widget-header">💉 Volume Seringue</div>
       <div class="widget-body">
         <div class="field-group">
-          <label class="field-label">Volume (mL)</label>
-          <input type="number" id="mar-vol-input" value="60" min="1" step="1">
+          <label class="field-label">Volume de la seringue (cm³)</label>
+          <input type="number" id="mar-vol-input" value="60" min="1" step="5">
         </div>
-        <div class="quick-strip">
-          <span class="field-label" style="width:100%">Accès rapide :</span>
-          <button class="quick-btn" onclick="setMarVol(60)">60</button>
-          <button class="quick-btn" onclick="setMarVol(50)">50</button>
-          <button class="quick-btn" onclick="setMarVol(40)">40</button>
-          <button class="quick-btn" onclick="setMarVol(30)">30</button>
-          <button class="quick-btn" onclick="setMarVol(20)">20</button>
-          <button class="quick-btn" onclick="setMarVol(15)">15</button>
-          <button class="quick-btn" onclick="setMarVol(10)">10</button>
+        <div class="field-label" style="margin-bottom:5px">Volumes rapides :</div>
+        <div class="quick-strip" id="mar-quick-strip">
+          <button class="quick-btn" id="mqb-20" onclick="setMarVol(20)">20</button>
+          <button class="quick-btn" id="mqb-25" onclick="setMarVol(25)">25</button>
+          <button class="quick-btn" id="mqb-30" onclick="setMarVol(30)">30</button>
+          <button class="quick-btn" id="mqb-35" onclick="setMarVol(35)">35</button>
+          <button class="quick-btn mar-ref" id="mqb-40" onclick="setMarVol(40)">40</button>
+          <button class="quick-btn" id="mqb-45" onclick="setMarVol(45)">45</button>
+          <button class="quick-btn" id="mqb-50" onclick="setMarVol(50)">50</button>
+          <button class="quick-btn" id="mqb-55" onclick="setMarVol(55)">55</button>
+          <button class="quick-btn" id="mqb-60" onclick="setMarVol(60)">60</button>
         </div>
         <button class="btn btn-solid-green" id="mar-add-btn" onclick="marAddPoint()" disabled style="margin-top:12px">➕ AJOUTER MESURE</button>
       </div>
@@ -696,10 +700,13 @@ table.data-table tr:last-child td { color: var(--green); }
     <div class="widget">
       <div class="widget-header">📈 Résultats</div>
       <div class="widget-body">
-        <div class="stats-row">
+        <div class="stats-row" style="grid-template-columns:1fr 1fr">
           <div class="stat-cell"><div class="stat-val" id="mar-n">0</div><div class="stat-lbl">Points</div></div>
-          <div class="stat-cell"><div class="stat-val" id="mar-pv">---</div><div class="stat-lbl">PV moyen</div></div>
           <div class="stat-cell"><div class="stat-val" id="mar-r2">---</div><div class="stat-lbl">R²</div></div>
+        </div>
+        <div style="margin-top:8px;text-align:center">
+          <div class="field-label">P × V moyen</div>
+          <div style="font-family:var(--mono);font-size:1.1rem;color:var(--blue)" id="mar-pv">--- kPa·cm³</div>
         </div>
       </div>
     </div>
@@ -708,9 +715,10 @@ table.data-table tr:last-child td { color: var(--green); }
     <div class="widget">
       <div class="widget-header">⚙️ Actions</div>
       <div class="widget-body">
-        <button class="btn btn-amber" onclick="marNewSerie()">🔄 NOUVELLE SÉRIE</button>
-        <button class="btn btn-green" onclick="marSave()">💾 SAUVEGARDER CSV</button>
-        <button class="btn btn-blue" onclick="marRegression()">📈 TRACER RÉGRESSIONS</button>
+        <button class="btn btn-amber"  onclick="marNewSerie()">🔄 NOUVELLE SÉRIE</button>
+        <button class="btn btn-green"  onclick="marSave()">💾 SAUVEGARDER CSV</button>
+        <button class="btn btn-blue"   onclick="marRegression()">📈 TRACER COURBES</button>
+        <button class="btn btn-purple" onclick="marCheckLinearity()">📐 VÉRIFIER LINÉARITÉ</button>
       </div>
     </div>
 
@@ -721,14 +729,63 @@ table.data-table tr:last-child td { color: var(--green); }
     </div>
   </div>
 
+  <!-- DROITE : onglets Graphiques / Tableur -->
   <div class="panel-right">
-    <!-- Graphique P=f(V) -->
-    <div class="chart-container" style="flex:1">
-      <canvas id="mar-chart1"></canvas>
+    <!-- Barre d'onglets -->
+    <div style="display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:0">
+      <button class="mar-tab active" id="mar-tab-graph" onclick="marShowTab('graph')"
+        style="font-family:var(--sans);font-weight:600;font-size:0.85rem;letter-spacing:1.5px;text-transform:uppercase;
+               padding:10px 24px;border:none;background:transparent;color:var(--blue);cursor:pointer;
+               border-bottom:3px solid var(--blue);">
+        📊 GRAPHIQUES
+      </button>
+      <button class="mar-tab" id="mar-tab-sheet" onclick="marShowTab('sheet')"
+        style="font-family:var(--sans);font-weight:600;font-size:0.85rem;letter-spacing:1.5px;text-transform:uppercase;
+               padding:10px 24px;border:none;background:transparent;color:var(--text-dim);cursor:pointer;
+               border-bottom:3px solid transparent;">
+        📋 TABLEUR
+      </button>
     </div>
-    <!-- Graphique P=f(1/V) -->
-    <div class="chart-container" style="flex:1">
-      <canvas id="mar-chart2"></canvas>
+
+    <!-- Onglet Graphiques -->
+    <div id="mar-panel-graph" style="display:flex;flex-direction:column;flex:1;gap:14px;padding-top:14px">
+      <div class="chart-container" style="flex:1">
+        <canvas id="mar-chart1"></canvas>
+      </div>
+      <div class="chart-container" style="flex:1">
+        <canvas id="mar-chart2"></canvas>
+      </div>
+    </div>
+
+    <!-- Onglet Tableur -->
+    <div id="mar-panel-sheet" style="display:none;flex-direction:column;flex:1;gap:10px;padding-top:14px">
+      <!-- Aide formules -->
+      <div style="font-family:var(--mono);font-size:0.7rem;color:var(--text-dim);padding:8px 12px;
+                  background:var(--bg2);border:1px solid var(--border);line-height:1.8">
+        <span style="color:var(--amber)">Colonne Calcul</span> : cliquez sur une cellule pour entrer une valeur ou une formule.
+        Exemple : <span style="color:var(--green)"><b>=A1*B1</b></span> (A = Volume, B = Pression, chiffre = n° de ligne).
+        <span style="color:var(--blue)">"Remplir ↓"</span> applique la formule de la ligne 1 à toutes les lignes.
+        Cliquez sur un <span style="color:var(--text-dim)">en-tête de colonne</span> pour trier.
+      </div>
+      <!-- Boutons tableur -->
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-red"  onclick="marDeleteRow()" style="flex:1;margin-bottom:0">🗑 SUPPRIMER LIGNE</button>
+        <button class="btn btn-blue" onclick="marFillDown()"  style="flex:1;margin-bottom:0">⬇ REMPLIR ↓</button>
+      </div>
+      <!-- Table -->
+      <div style="flex:1;overflow-y:auto;background:var(--bg2);border:1px solid var(--border)">
+        <table id="mar-sheet-table" style="width:100%;border-collapse:collapse;font-family:var(--mono);font-size:0.8rem">
+          <thead>
+            <tr style="background:var(--bg3);position:sticky;top:0;z-index:2">
+              <th onclick="marSortSheet('num')"    style="padding:9px 12px;color:var(--text-dim);font-weight:normal;letter-spacing:1px;cursor:pointer;border-bottom:1px solid var(--border);text-align:center;user-select:none" title="Trier">N° ↕</th>
+              <th onclick="marSortSheet('volume')" style="padding:9px 12px;color:var(--blue);font-weight:600;letter-spacing:1px;cursor:pointer;border-bottom:1px solid var(--border);text-align:center;user-select:none" title="Trier">A — Volume (cm³) ↕</th>
+              <th onclick="marSortSheet('pres')"   style="padding:9px 12px;color:var(--green);font-weight:600;letter-spacing:1px;cursor:pointer;border-bottom:1px solid var(--border);text-align:center;user-select:none" title="Trier">B — Pression (kPa) ↕</th>
+              <th style="padding:9px 12px;color:var(--amber);font-weight:600;letter-spacing:1px;border-bottom:1px solid var(--border);text-align:center">C — Calcul</th>
+            </tr>
+          </thead>
+          <tbody id="mar-sheet-body"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 </div>
@@ -1254,10 +1311,56 @@ function phLog(type, msg) { addLog('ph-log', type, msg); }
 /* ══════════════════════════════════════
    ── MODULE MARIOTTE ──
 ══════════════════════════════════════ */
+
+// État tableur Mariotte
+const marSheet = {
+  formulas: {},          // { rowIndex: '=A1*B1' }
+  selected: null,        // index ligne sélectionnée
+  sortAsc: { num: true, volume: true, pres: true }
+};
+
 function updatePresDisplay() {
   document.getElementById('pres-display').textContent = state.currentPression.toFixed(1);
 }
+
 function setMarVol(v) { document.getElementById('mar-vol-input').value = v; }
+
+// Onglets Mariotte
+function marShowTab(tab) {
+  document.getElementById('mar-panel-graph').style.display  = tab === 'graph' ? 'flex' : 'none';
+  document.getElementById('mar-panel-sheet').style.display  = tab === 'sheet' ? 'flex' : 'none';
+  const tg = document.getElementById('mar-tab-graph');
+  const ts = document.getElementById('mar-tab-sheet');
+  if (tab === 'graph') {
+    tg.style.color = 'var(--blue)'; tg.style.borderBottom = '3px solid var(--blue)';
+    ts.style.color = 'var(--text-dim)'; ts.style.borderBottom = '3px solid transparent';
+  } else {
+    ts.style.color = 'var(--blue)'; ts.style.borderBottom = '3px solid var(--blue)';
+    tg.style.color = 'var(--text-dim)'; tg.style.borderBottom = '3px solid transparent';
+  }
+}
+
+// Boutons rapides : colorer en bleu ceux déjà mesurés
+function marUpdateQuickButtons() {
+  const measured = new Set(state.marVolumes.map(v => Math.round(v)));
+  [20,25,30,35,40,45,50,55,60].forEach(v => {
+    const btn = document.getElementById(`mqb-${v}`);
+    if (!btn) return;
+    if (measured.has(v)) {
+      btn.style.background = 'rgba(64,196,255,0.25)';
+      btn.style.color = 'var(--blue)';
+      btn.style.borderColor = 'var(--blue)';
+    } else if (v === 40) {
+      btn.style.background = 'rgba(0,230,118,0.1)';
+      btn.style.color = 'var(--green)';
+      btn.style.borderColor = 'rgba(0,230,118,0.4)';
+    } else {
+      btn.style.background = '';
+      btn.style.color = '';
+      btn.style.borderColor = '';
+    }
+  });
+}
 
 function marAddPoint() {
   if (!state.connected) { alert('Arduino non connecté !'); return; }
@@ -1268,44 +1371,47 @@ function marAddPoint() {
   state.marPressions.push(p);
   marUpdateCharts();
   marUpdateStats();
-  marLog('ok', `Mesure : V=${vol} mL, P=${p.toFixed(1)} kPa, P×V=${(p*vol).toFixed(1)}`);
+  marRefreshSheet();
+  marUpdateQuickButtons();
+  marLog('ok', `Mesure : V=${vol} cm³, P=${p.toFixed(1)} kPa, P×V=${(p*vol).toFixed(1)}`);
 }
 
 function marUpdateCharts() {
   const V = state.marVolumes, P = state.marPressions;
-  // Chart 1 : points
   marChart1.data.datasets[0].data = V.map((v, i) => ({ x: v, y: P[i] }));
   marChart1.update();
-  // Chart 2 : P = f(1/V)
   marChart2.data.datasets[0].data = V.map((v, i) => ({ x: 1/v, y: P[i] }));
   marChart2.update();
 }
 
 function marUpdateStats() {
   const V = state.marVolumes, P = state.marPressions;
-  if (V.length === 0) return;
+  document.getElementById('mar-n').textContent = V.length;
+  if (V.length === 0) {
+    document.getElementById('mar-pv').textContent = '--- kPa·cm³';
+    document.getElementById('mar-r2').textContent = '---';
+    return;
+  }
   const pvVals = V.map((v, i) => v * P[i]);
   const pvMoy = pvVals.reduce((a, b) => a + b, 0) / pvVals.length;
-  document.getElementById('mar-n').textContent = V.length;
-  document.getElementById('mar-pv').textContent = pvMoy.toFixed(0) + ' kPa·mL';
-  // R² si ≥ 3 points
+  document.getElementById('mar-pv').textContent = pvMoy.toFixed(1) + ' kPa·cm³';
   if (V.length >= 3) {
     const invV = V.map(v => 1/v);
-    const r2 = computeR2(invV, P);
-    document.getElementById('mar-r2').textContent = r2.toFixed(4);
+    document.getElementById('mar-r2').textContent = computeR2(invV, P).toFixed(4);
   }
 }
 
 function marRegression() {
   const V = state.marVolumes, P = state.marPressions;
-  if (V.length < 3) { alert('Pas assez de points !'); return; }
+  if (V.length < 3) { alert('Pas assez de points (minimum 3) !'); return; }
   const pvVals = V.map((v, i) => v * P[i]);
   const pvMoy  = pvVals.reduce((a, b) => a + b, 0) / pvVals.length;
-  // Hyperbole
+  // Hyperbole P = k/V sur graphique 1
   const vArr = Array.from({length: 60}, (_, i) => 1 + i);
   marChart1.data.datasets[1].data = vArr.map(v => ({ x: v, y: pvMoy / v }));
+  marChart1.data.datasets[1].label = `P×V = ${pvMoy.toFixed(0)} kPa·cm³`;
   marChart1.update();
-  // Régression P=f(1/V)
+  // Régression P = f(1/V)
   const invV = V.map(v => 1/v);
   const { slope, intercept } = linearReg(invV, P);
   const xArr = Array.from({length: 50}, (_, i) => 0.001 + i * 0.001);
@@ -1313,33 +1419,199 @@ function marRegression() {
   marChart2.data.datasets[1].label = `P = ${slope.toFixed(1)}/V + ${intercept.toFixed(1)}`;
   marChart2.update();
   const r2 = computeR2(invV, P);
-  marLog('ok', `Régressions tracées — R²=${r2.toFixed(4)}`);
-  alert(`Régression P = f(1/V)\n\nP = ${slope.toFixed(1)} × (1/V) + ${intercept.toFixed(1)}\nR² = ${r2.toFixed(4)}\nP×V moyen = ${pvMoy.toFixed(1)} kPa·mL\n\n${r2 > 0.99 ? '✅ Excellente linéarité !' : r2 > 0.95 ? '✅ Bonne linéarité' : '⚠ Linéarité moyenne'}`);
+  marLog('ok', `Courbes tracées — R²=${r2.toFixed(4)} — P×V=${pvMoy.toFixed(1)} kPa·cm³`);
+}
+
+function marCheckLinearity() {
+  const V = state.marVolumes, P = state.marPressions;
+  if (V.length < 3) { alert('Pas assez de points !'); return; }
+  const invV = V.map(v => 1/v);
+  const { slope, intercept } = linearReg(invV, P);
+  const r2 = computeR2(invV, P);
+  const verdict = r2 > 0.99 ? '✅ Excellente linéarité !\nLa loi de Mariotte est vérifiée.'
+                : r2 > 0.95 ? '✅ Bonne linéarité.\nLa loi de Mariotte est globalement vérifiée.'
+                :              '⚠️ Linéarité moyenne.\nVérifiez les conditions expérimentales.';
+  marLog('info', `Linéarité : P = ${slope.toFixed(1)}×(1/V) + ${intercept.toFixed(1)}, R²=${r2.toFixed(4)}`);
+  alert(`VÉRIFICATION DE LA LINÉARITÉ\n\nÉquation : P = ${slope.toFixed(1)} × (1/V) + ${intercept.toFixed(1)}\n\nCoefficient de détermination : R² = ${r2.toFixed(4)}\n\n${verdict}`);
 }
 
 function marNewSerie() {
   if (state.marVolumes.length > 0 && !confirm('Effacer les données ?')) return;
   state.marVolumes = []; state.marPressions = [];
+  marSheet.formulas = {}; marSheet.selected = null;
   marChart1.data.datasets.forEach(d => d.data = []);
   marChart2.data.datasets.forEach(d => d.data = []);
   marChart1.update(); marChart2.update();
-  document.getElementById('mar-n').textContent = '0';
-  document.getElementById('mar-pv').textContent = '---';
-  document.getElementById('mar-r2').textContent = '---';
+  marUpdateStats();
+  marRefreshSheet();
+  marUpdateQuickButtons();
   marLog('info', '🔄 Nouvelle série démarrée');
 }
 
 function marSave() {
   if (state.marVolumes.length === 0) { alert('Aucune donnée !'); return; }
-  let csv = 'Volume (mL);Pression (kPa);P×V (kPa.mL);1/V (mL-1)\n';
+  let csv = 'Volume (cm³);Pression (kPa);Calcul\n';
   state.marVolumes.forEach((v, i) => {
     const p = state.marPressions[i];
-    csv += `${v.toFixed(2)};${p.toFixed(2)};${(p*v).toFixed(2)};${(1/v).toFixed(6)}\n`;
+    const calc = i in marSheet.formulas ? marEvalFormula(marSheet.formulas[i], i) : '';
+    csv += `${v.toFixed(2)};${p.toFixed(2)};${calc}\n`;
   });
   downloadFile(csv, `mariotte_${timestamp()}.csv`, 'text/csv');
   marLog('ok', '💾 Fichier CSV téléchargé');
 }
+
 function marLog(type, msg) { addLog('mar-log', type, msg); }
+
+/* ── TABLEUR MARIOTTE ── */
+function marRefreshSheet() {
+  const tb = document.getElementById('mar-sheet-body');
+  tb.innerHTML = '';
+  state.marVolumes.forEach((v, i) => {
+    const p = state.marPressions[i];
+    const calc = i in marSheet.formulas ? marEvalFormula(marSheet.formulas[i], i) : '';
+    const tr = document.createElement('tr');
+    tr.style.background = i % 2 === 0 ? 'var(--bg2)' : 'var(--bg3)';
+    tr.style.cursor = 'pointer';
+    if (marSheet.selected === i) tr.style.outline = '1px solid var(--blue)';
+    tr.onclick = () => { marSheet.selected = i; marRefreshSheet(); };
+
+    // N°
+    const tdN = document.createElement('td');
+    tdN.textContent = i + 1;
+    tdN.style.cssText = 'padding:7px 10px;text-align:center;color:var(--text-dim);border-bottom:1px solid rgba(42,58,74,0.4)';
+    tr.appendChild(tdN);
+
+    // Volume (éditable)
+    const tdV = document.createElement('td');
+    tdV.textContent = v.toFixed(1);
+    tdV.style.cssText = 'padding:7px 10px;text-align:center;color:var(--blue);border-bottom:1px solid rgba(42,58,74,0.4)';
+    tdV.ondblclick = e => { e.stopPropagation(); marEditCell(tdV, 'volume', i); };
+    tr.appendChild(tdV);
+
+    // Pression (éditable)
+    const tdP = document.createElement('td');
+    tdP.textContent = p.toFixed(1);
+    tdP.style.cssText = 'padding:7px 10px;text-align:center;color:var(--green);border-bottom:1px solid rgba(42,58,74,0.4)';
+    tdP.ondblclick = e => { e.stopPropagation(); marEditCell(tdP, 'pres', i); };
+    tr.appendChild(tdP);
+
+    // Calcul (formule)
+    const tdC = document.createElement('td');
+    tdC.textContent = calc;
+    tdC.style.cssText = 'padding:7px 10px;text-align:center;color:var(--amber);border-bottom:1px solid rgba(42,58,74,0.4)';
+    tdC.ondblclick = e => { e.stopPropagation(); marEditCell(tdC, 'calc', i); };
+    tr.appendChild(tdC);
+
+    tb.appendChild(tr);
+  });
+}
+
+function marEditCell(td, col, rowIdx) {
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.style.cssText = 'width:100%;background:var(--bg);color:var(--amber);border:1px solid var(--blue);font-family:var(--mono);font-size:0.8rem;padding:4px;text-align:center;outline:none';
+  let initVal = '';
+  if (col === 'volume')    initVal = state.marVolumes[rowIdx].toFixed(1);
+  else if (col === 'pres') initVal = state.marPressions[rowIdx].toFixed(1);
+  else if (col === 'calc') initVal = marSheet.formulas[rowIdx] || td.textContent;
+  input.value = initVal;
+  td.textContent = '';
+  td.appendChild(input);
+  input.focus(); input.select();
+
+  const commit = () => {
+    const raw = input.value.trim();
+    if (col === 'volume') {
+      const v = parseFloat(raw.replace(',', '.'));
+      if (!isNaN(v) && v > 0) { state.marVolumes[rowIdx] = v; marUpdateCharts(); marUpdateStats(); }
+    } else if (col === 'pres') {
+      const p = parseFloat(raw.replace(',', '.'));
+      if (!isNaN(p) && p > 0) { state.marPressions[rowIdx] = p; marUpdateCharts(); marUpdateStats(); }
+    } else if (col === 'calc') {
+      if (raw === '') delete marSheet.formulas[rowIdx];
+      else marSheet.formulas[rowIdx] = raw;
+    }
+    marRefreshSheet();
+  };
+  input.addEventListener('blur', commit);
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); commit(); }
+    if (e.key === 'Escape') marRefreshSheet();
+  });
+}
+
+function marEvalFormula(formula, rowIdx) {
+  if (!formula.startsWith('=')) return formula;
+  try {
+    let expr = formula.slice(1);
+    expr = expr.replace(/([ABab])(\d+)/g, (_, col, num) => {
+      const r = parseInt(num) - 1;
+      if (r < 0 || r >= state.marVolumes.length) return '0';
+      if (col.toUpperCase() === 'A') return String(state.marVolumes[r]);
+      if (col.toUpperCase() === 'B') return String(state.marPressions[r]);
+      return '0';
+    });
+    const result = Function('"use strict"; return (' + expr + ')')();
+    return isFinite(result) ? result.toFixed(2) : 'ERREUR';
+  } catch { return 'ERREUR'; }
+}
+
+function marFillDown() {
+  if (!state.marVolumes.length) return;
+  if (!(0 in marSheet.formulas)) {
+    alert('Entrez d\'abord une formule dans la cellule Calcul de la ligne 1.\nExemple : =A1*B1');
+    return;
+  }
+  const base = marSheet.formulas[0];
+  state.marVolumes.forEach((_, i) => {
+    const adapted = base.replace(/([ABab])(\d+)/g, (_, col, _n) => `${col}${i+1}`);
+    marSheet.formulas[i] = adapted;
+  });
+  marRefreshSheet();
+  marLog('ok', `Formule "${base}" appliquée à ${state.marVolumes.length} lignes`);
+}
+
+function marDeleteRow() {
+  if (marSheet.selected === null) { alert('Cliquez d\'abord sur une ligne pour la sélectionner.'); return; }
+  const i = marSheet.selected;
+  state.marVolumes.splice(i, 1);
+  state.marPressions.splice(i, 1);
+  // Réindexer les formules
+  const newF = {};
+  Object.entries(marSheet.formulas).forEach(([k, v]) => {
+    const ki = parseInt(k);
+    if (ki < i) newF[ki] = v;
+    else if (ki > i) newF[ki - 1] = v;
+  });
+  marSheet.formulas = newF;
+  marSheet.selected = null;
+  marUpdateCharts(); marUpdateStats(); marRefreshSheet(); marUpdateQuickButtons();
+  marLog('info', `Ligne ${i + 1} supprimée`);
+}
+
+function marSortSheet(col) {
+  if (state.marVolumes.length < 2) return;
+  const asc = marSheet.sortAsc[col] !== false;
+  marSheet.sortAsc[col] = !asc;
+  const indices = state.marVolumes.map((_, i) => i);
+  indices.sort((a, b) => {
+    let va, vb;
+    if (col === 'volume') { va = state.marVolumes[a]; vb = state.marVolumes[b]; }
+    else if (col === 'pres') { va = state.marPressions[a]; vb = state.marPressions[b]; }
+    else { va = a; vb = b; }
+    return asc ? va - vb : vb - va;
+  });
+  state.marVolumes   = indices.map(i => state.marVolumes[i]);
+  state.marPressions = indices.map(i => state.marPressions[i]);
+  // Réindexer les formules
+  const newF = {};
+  indices.forEach((oldIdx, newIdx) => {
+    if (oldIdx in marSheet.formulas) newF[newIdx] = marSheet.formulas[oldIdx];
+  });
+  marSheet.formulas = newF;
+  marSheet.selected = null;
+  marUpdateCharts(); marUpdateStats(); marRefreshSheet();
+}
 
 /* ══════════════════════════════════════
    ── MODULE TEMPÉRATURE ──
