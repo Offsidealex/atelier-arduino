@@ -417,7 +417,7 @@ table.data-table tr:last-child td { color: var(--green); }
   border-radius: 3px;
   flex: 1;
   padding: 16px;
-  min-height: 400px;
+  min-height: 280px;
 }
 .chart-container canvas { max-height: 100% !important; }
 
@@ -748,11 +748,13 @@ table.data-table tr:last-child td { color: var(--green); }
     </div>
 
     <!-- Onglet Graphiques -->
-    <div id="mar-panel-graph" style="display:flex;flex-direction:column;flex:1;gap:14px;padding-top:14px">
-      <div class="chart-container" style="flex:1">
+    <div id="mar-panel-graph" style="display:flex;flex-direction:row;flex:1;gap:14px;padding-top:14px">
+      <div class="chart-container" style="flex:1;min-height:0">
+        <div style="font-family:var(--mono);font-size:0.68rem;color:var(--blue);letter-spacing:1px;margin-bottom:8px">P = f(V) — HYPERBOLE</div>
         <canvas id="mar-chart1"></canvas>
       </div>
-      <div class="chart-container" style="flex:1">
+      <div class="chart-container" style="flex:1;min-height:0">
+        <div style="font-family:var(--mono);font-size:0.68rem;color:var(--green);letter-spacing:1px;margin-bottom:8px">P = f(1/V) — VÉRIFICATION LINÉARITÉ</div>
         <canvas id="mar-chart2"></canvas>
       </div>
     </div>
