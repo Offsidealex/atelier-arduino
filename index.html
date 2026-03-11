@@ -30,6 +30,78 @@
   --glow-a:   0 0 12px rgba(255,171,64,0.4);
   --glow-b:   0 0 12px rgba(64,196,255,0.4);
 }
+
+/* ── THÈME CLAIR ── */
+body.light {
+  --bg:       #f0f4f8;
+  --bg2:      #ffffff;
+  --bg3:      #e8eef4;
+  --border:   #c8d6e0;
+  --green:    #00897b;
+  --green-d:  #00695c;
+  --amber:    #e65100;
+  --red:      #c62828;
+  --blue:     #1565c0;
+  --purple:   #6a1b9a;
+  --text:     #1a2332;
+  --text-dim: #607d8b;
+  --glow-g:   0 0 8px rgba(0,137,123,0.2);
+  --glow-a:   0 0 8px rgba(230,81,0,0.2);
+  --glow-b:   0 0 8px rgba(21,101,192,0.2);
+}
+body.light::before {
+  background-image:
+    linear-gradient(rgba(0,137,123,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,137,123,0.04) 1px, transparent 1px);
+}
+body.light #header { background: #1a2b3c; border-bottom-color: #2a3a4a; }
+body.light #nav    { background: #ffffff; border-bottom-color: #c8d6e0; }
+body.light .nav-tab { color: #607d8b; }
+body.light .nav-tab.active { color: #1565c0; border-bottom-color: #1565c0; }
+body.light .xl-wrap, body.light .xl-formulabar,
+body.light .xl-table .xl-corner,
+body.light .xl-table .xl-col-head { background: #e8eef4; }
+body.light .xl-cell { background: #ffffff; color: #1a2332; border-color: #c8d6e0; }
+body.light .xl-cell:hover { background: #f5f9fc; }
+body.light .xl-row-num { background: #e8eef4; color: #607d8b; border-color: #c8d6e0; }
+body.light .oscilo-screen-wrap { background: #2a4a7a; }
+body.light .log-box { background: #f5f9fc; }
+
+/* ── THEME TOGGLE ── */
+#theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 5px 14px 5px 8px;
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  transition: all .2s;
+  white-space: nowrap;
+}
+#theme-toggle:hover { border-color: var(--blue); color: var(--text); }
+#theme-toggle .theme-icon { font-size: 1rem; transition: transform .3s; }
+#theme-toggle .theme-track {
+  width: 32px; height: 16px;
+  background: var(--border);
+  border-radius: 8px;
+  position: relative;
+  transition: background .2s;
+}
+#theme-toggle .theme-thumb {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: var(--text-dim);
+  position: absolute;
+  top: 2px; left: 2px;
+  transition: left .2s, background .2s;
+}
+body.light #theme-toggle .theme-track { background: #1565c0; }
+body.light #theme-toggle .theme-thumb { left: 18px; background: #fff; }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
   font-family: var(--sans);
@@ -733,11 +805,20 @@ canvas.knob-canvas { cursor: pointer; display: block; }
       <div class="subtitle">LYCÉE DENIS DIDEROT — BELFORT — 2026</div>
     </div>
   </div>
+
+  <!-- CENTRE : connexion Arduino -->
   <div class="serial-badge">
     <span class="dot" id="conn-dot"></span>
     <span id="conn-label" style="color:var(--text-dim)">NON CONNECTÉ</span>
     <button id="connect-btn" onclick="connectSerial()">▶ CONNECTER</button>
   </div>
+
+  <!-- DROITE : toggle thème -->
+  <button id="theme-toggle" onclick="toggleTheme()" title="Basculer thème clair / sombre">
+    <span class="theme-icon" id="theme-icon">🌙</span>
+    <div class="theme-track"><div class="theme-thumb"></div></div>
+    <span id="theme-label">Sombre</span>
+  </button>
 </div>
 
 <!-- ═══ NAV ═══ -->
@@ -2089,8 +2170,21 @@ function computeR2(x, y) {
   return 1 - ssRes/ssTot;
 }
 
+function toggleTheme() {
+  const isLight = document.body.classList.toggle('light');
+  document.getElementById('theme-icon').textContent  = isLight ? '☀️' : '🌙';
+  document.getElementById('theme-label').textContent = isLight ? 'Clair' : 'Sombre';
+  localStorage.setItem('theme', isLight ? 'light' : 'dark');
+}
+
 // Vérifier support Web Serial au démarrage
 window.addEventListener('load', () => {
+  // Restaurer le thème sauvegardé
+  if (localStorage.getItem('theme') === 'light') {
+    document.body.classList.add('light');
+    document.getElementById('theme-icon').textContent  = '☀️';
+    document.getElementById('theme-label').textContent = 'Clair';
+  }
   if (!('serial' in navigator)) {
     document.getElementById('conn-label').textContent = 'CHROME/EDGE REQUIS';
     document.getElementById('conn-label').style.color = 'var(--red)';
