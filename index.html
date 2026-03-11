@@ -54,18 +54,35 @@ body.light::before {
     linear-gradient(rgba(0,137,123,0.04) 1px, transparent 1px),
     linear-gradient(90deg, rgba(0,137,123,0.04) 1px, transparent 1px);
 }
-body.light #header { background: #1a2b3c; border-bottom-color: #2a3a4a; }
-body.light #nav    { background: #ffffff; border-bottom-color: #c8d6e0; }
-body.light .nav-tab { color: #607d8b; }
-body.light .nav-tab.active { color: #1565c0; border-bottom-color: #1565c0; }
-body.light .xl-wrap, body.light .xl-formulabar,
-body.light .xl-table .xl-corner,
-body.light .xl-table .xl-col-head { background: #e8eef4; }
-body.light .xl-cell { background: #ffffff; color: #1a2332; border-color: #c8d6e0; }
-body.light .xl-cell:hover { background: #f5f9fc; }
-body.light .xl-row-num { background: #e8eef4; color: #607d8b; border-color: #c8d6e0; }
+body.light #header { background: var(--bg2); border-bottom-color: var(--border); }
+body.light #nav    { background: var(--bg2); border-bottom-color: var(--border); }
+body.light .nav-tab { color: var(--text-dim); }
+body.light .nav-tab.active { color: var(--blue); border-bottom-color: var(--blue); }
+
+/* Tableur thème clair */
+body.light .xl-wrap { border-color: var(--border); }
+body.light .xl-formulabar { background: var(--bg3); border-bottom-color: var(--border); }
+body.light .xl-scroll::-webkit-scrollbar-track { background: var(--bg3); }
+body.light .xl-scroll::-webkit-scrollbar-thumb { background: var(--border); }
+body.light .xl-table .xl-corner { background: var(--bg3); border-color: var(--border); }
+body.light .xl-table .xl-col-head { background: var(--bg3); color: var(--text-dim); border-color: var(--border); }
+body.light .xl-table .xl-col-head:hover { background: var(--bg2); color: var(--text); }
+body.light .xl-cell { background: var(--bg2); color: var(--text); border-color: var(--border); }
+body.light .xl-cell:hover { background: var(--bg3); }
+body.light .xl-cell.selected { background: rgba(21,101,192,0.1) !important; outline-color: var(--blue); }
+body.light .xl-cell.col-a { color: var(--blue); }
+body.light .xl-cell.col-b { color: var(--red); }
+body.light .xl-cell.col-c { color: var(--green); }
+body.light .xl-cell.col-calc { color: var(--amber); }
+body.light .xl-row-num { background: var(--bg3); color: var(--text-dim); border-color: var(--border); }
+body.light .xl-row-num.row-selected { background: rgba(21,101,192,0.15); color: var(--blue); }
+body.light .xl-cellref { background: var(--bg); border-color: var(--border); color: var(--text-dim); }
+body.light .xl-fx { color: var(--text-dim); border-color: var(--border); }
+body.light .xl-formulaval { color: var(--text); }
+body.light .xl-table .xl-col-head.sorted { background: rgba(21,101,192,0.15); color: var(--blue); }
+
 body.light .oscilo-screen-wrap { background: #2a4a7a; }
-body.light .log-box { background: #f5f9fc; }
+body.light .log-box { background: var(--bg3); }
 
 /* ── THEME TOGGLE ── */
 #theme-toggle {
@@ -489,11 +506,11 @@ table.data-table tr:last-child td { color: var(--green); }
   border: 1px solid var(--border);
   border-radius: 3px;
   padding: 12px;
-  height: 750px;
+  height: 600px;
 }
 .chart-container.mar-side {
   flex: 1;
-  height: 750px;
+  height: 600px;
 }
 
 /* ── STATS ROW ── */
@@ -939,7 +956,7 @@ canvas.knob-canvas { cursor: pointer; display: block; }
 
     <!-- Onglet Graphique -->
     <div id="ph-panel-graph">
-      <div class="chart-container" style="height:750px">
+      <div class="chart-container" style="height:600px">
         <canvas id="ph-chart"></canvas>
       </div>
     </div>
@@ -1085,7 +1102,7 @@ canvas.knob-canvas { cursor: pointer; display: block; }
     </div>
 
     <!-- Onglet Graphiques -->
-    <div id="mar-panel-graph" style="display:flex;flex-direction:row;gap:14px;padding-top:14px;height:770px">
+    <div id="mar-panel-graph" style="display:flex;flex-direction:row;gap:14px;padding-top:14px;height:620px">
       <div class="chart-container mar-side">
         <div style="font-family:var(--mono);font-size:0.68rem;color:var(--blue);letter-spacing:1px;margin-bottom:6px">P = f(V) — HYPERBOLE</div>
         <canvas id="mar-chart1"></canvas>
@@ -1221,7 +1238,7 @@ canvas.knob-canvas { cursor: pointer; display: block; }
 
     <!-- Onglet Graphique -->
     <div id="temp-panel-graph">
-      <div class="chart-container" style="height:750px">
+      <div class="chart-container" style="height:600px">
         <canvas id="temp-chart"></canvas>
       </div>
     </div>
