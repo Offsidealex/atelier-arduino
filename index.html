@@ -421,6 +421,7 @@ table.data-table tr:last-child td { color: var(--green); }
 }
 .chart-container.mar-side {
   flex: 1;
+  height: 750px;
 }
 
 /* ── STATS ROW ── */
@@ -1005,8 +1006,7 @@ const marChart1 = new Chart(ctxMar1, {
     ]
   },
   options: {
-    responsive: false,
-    animation: false,
+    responsive: true, maintainAspectRatio: false, animation: false,
     scales: {
       x: { min: 0, max: 65, title: { display: true, text: 'Volume V (cm³)', color: '#90a4ae', font: { family: 'Share Tech Mono' } }, ticks: { color: '#546e7a', font: { family: 'Share Tech Mono', size: 10 } }, grid: { color: 'rgba(42,58,74,0.6)' } },
       y: { title: { display: true, text: 'Pression P (kPa)', color: '#90a4ae', font: { family: 'Share Tech Mono' } }, ticks: { color: '#546e7a', font: { family: 'Share Tech Mono', size: 10 } }, grid: { color: 'rgba(42,58,74,0.6)' } }
@@ -1027,8 +1027,7 @@ const marChart2 = new Chart(ctxMar2, {
     ]
   },
   options: {
-    responsive: false,
-    animation: false,
+    responsive: true, maintainAspectRatio: false, animation: false,
     scales: {
       x: { min: 0, title: { display: true, text: '1/V (cm⁻³)', color: '#90a4ae', font: { family: 'Share Tech Mono' } }, ticks: { color: '#546e7a', font: { family: 'Share Tech Mono', size: 10 } }, grid: { color: 'rgba(42,58,74,0.6)' } },
       y: { title: { display: true, text: 'Pression P (kPa)', color: '#90a4ae', font: { family: 'Share Tech Mono' } }, ticks: { color: '#546e7a', font: { family: 'Share Tech Mono', size: 10 } }, grid: { color: 'rgba(42,58,74,0.6)' } }
@@ -1772,14 +1771,8 @@ window.addEventListener('load', () => {
 window.addEventListener('resize', resizeMariotteCharts);
 
 function resizeMariotteCharts() {
-  const panel = document.getElementById('mar-panel-graph');
-  if (!panel || panel.style.display === 'none') return;
-  const totalW = panel.offsetWidth;
-  if (totalW < 100) return;
-  const w = Math.floor((totalW - 14) / 2);
-  const h = 750;
-  marChart1.resize(w, h);
-  marChart2.resize(w, h);
+  marChart1.resize();
+  marChart2.resize();
 }
 </script>
 </body>
