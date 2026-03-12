@@ -553,8 +553,8 @@ table.data-table tr:last-child td { color: var(--green); }
 .xl-formulabar {
   display: flex;
   align-items: center;
-  background: #1e2736;
-  border-bottom: 1px solid #4a5568;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
   padding: 3px 6px;
   gap: 6px;
 }
@@ -582,13 +582,7 @@ table.data-table tr:last-child td { color: var(--green); }
   font-size: 0.8rem;
   color: #cfd8dc;
   flex: 1;
-  background: transparent;
-  border: none;
-  outline: none;
-  padding: 2px 4px;
 }
-.xl-formulaval:focus { background: #0d1117; border-radius: 2px; }
-body.light .xl-formulaval:focus { background: #fff; }
 .xl-scroll {
   overflow: auto;
   max-height: 650px;
@@ -973,9 +967,9 @@ canvas.knob-canvas { cursor: pointer; display: block; }
         <div class="xl-formulabar">
           <span class="xl-cellref" id="ph-xl-ref">A1</span>
           <span class="xl-fx">fx</span>
-          <input class="xl-formulaval" id="ph-xl-fval" placeholder="Sélectionnez une cellule..." onchange="phFormulaBarCommit()" onkeydown="if(event.key==='Enter')phFormulaBarCommit()">
+          <span class="xl-formulaval" id="ph-xl-fval"></span>
         </div>
-        <div style="display:flex;gap:6px;background:#1e2736;border-bottom:1px solid #4a5568;padding:4px 6px">
+        <div style="display:flex;gap:6px;background:var(--bg2);border-bottom:1px solid var(--border);padding:4px 6px">
           <button class="btn btn-red"  onclick="phDeleteRow()" style="margin:0;padding:4px 12px;font-size:0.72rem">🗑 Supprimer ligne</button>
           <button class="btn btn-blue" onclick="phFillDown()"  style="margin:0;padding:4px 12px;font-size:0.72rem">⬇ Remplir ↓</button>
           <span style="font-family:var(--mono);font-size:0.68rem;color:#546e7a;align-self:center;margin-left:8px">
@@ -993,9 +987,9 @@ canvas.knob-canvas { cursor: pointer; display: block; }
               </tr>
               <tr>
                 <th class="xl-corner" style="border-bottom:1px solid #4a5568"></th>
-                <th class="xl-col-head" style="font-size:0.65rem;color:var(--text-dim);font-weight:normal;background:var(--bg3);border-bottom:1px solid var(--border)">Volume (mL)</th>
-                <th class="xl-col-head" style="font-size:0.65rem;color:var(--text-dim);font-weight:normal;background:var(--bg3);border-bottom:1px solid var(--border)">pH</th>
-                <th class="xl-col-head" style="font-size:0.65rem;color:var(--text-dim);font-weight:normal;background:var(--bg3);border-bottom:1px solid var(--border)">Calcul</th>
+                <th class="xl-col-head" style="font-size:0.65rem;color:#546e7a;font-weight:normal;background:#252f3e;border-bottom:1px solid #4a5568">Volume (mL)</th>
+                <th class="xl-col-head" style="font-size:0.65rem;color:#546e7a;font-weight:normal;background:#252f3e;border-bottom:1px solid #4a5568">pH</th>
+                <th class="xl-col-head" style="font-size:0.65rem;color:#546e7a;font-weight:normal;background:#252f3e;border-bottom:1px solid #4a5568">Calcul</th>
               </tr>
             </thead>
             <tbody id="ph-sheet-body"></tbody>
@@ -1126,10 +1120,10 @@ canvas.knob-canvas { cursor: pointer; display: block; }
         <div class="xl-formulabar">
           <span class="xl-cellref" id="mar-xl-ref">A1</span>
           <span class="xl-fx">fx</span>
-          <input class="xl-formulaval" id="mar-xl-fval" placeholder="Sélectionnez une cellule..." onchange="marFormulaBarCommit()" onkeydown="if(event.key==='Enter')marFormulaBarCommit()">
+          <span class="xl-formulaval" id="mar-xl-fval"></span>
         </div>
         <!-- Boutons -->
-        <div style="display:flex;gap:0;background:#1e2736;border-bottom:1px solid #4a5568;padding:4px 6px;gap:6px">
+        <div style="display:flex;gap:6px;background:var(--bg2);border-bottom:1px solid var(--border);padding:4px 6px">
           <button class="btn btn-red"  onclick="marDeleteRow()" style="margin:0;padding:4px 12px;font-size:0.72rem">🗑 Supprimer ligne</button>
           <button class="btn btn-blue" onclick="marFillDown()"  style="margin:0;padding:4px 12px;font-size:0.72rem">⬇ Remplir ↓</button>
           <span style="font-family:var(--mono);font-size:0.68rem;color:#546e7a;align-self:center;margin-left:8px">
@@ -1148,9 +1142,9 @@ canvas.knob-canvas { cursor: pointer; display: block; }
               </tr>
               <tr>
                 <th class="xl-corner" style="font-size:0.6rem;color:#546e7a;border-bottom:1px solid #4a5568"></th>
-                <th class="xl-col-head" style="font-size:0.65rem;color:var(--text-dim);font-weight:normal;background:var(--bg3);border-bottom:1px solid var(--border)">Volume (cm³)</th>
-                <th class="xl-col-head" style="font-size:0.65rem;color:var(--text-dim);font-weight:normal;background:var(--bg3);border-bottom:1px solid var(--border)">Pression (kPa)</th>
-                <th class="xl-col-head" style="font-size:0.65rem;color:var(--text-dim);font-weight:normal;background:var(--bg3);border-bottom:1px solid var(--border)">Calcul</th>
+                <th class="xl-col-head" style="font-size:0.65rem;color:#546e7a;font-weight:normal;background:#252f3e;border-bottom:1px solid #4a5568">Volume (cm³)</th>
+                <th class="xl-col-head" style="font-size:0.65rem;color:#546e7a;font-weight:normal;background:#252f3e;border-bottom:1px solid #4a5568">Pression (kPa)</th>
+                <th class="xl-col-head" style="font-size:0.65rem;color:#546e7a;font-weight:normal;background:#252f3e;border-bottom:1px solid #4a5568">Calcul</th>
               </tr>
             </thead>
             <tbody id="mar-sheet-body"></tbody>
@@ -1255,9 +1249,9 @@ canvas.knob-canvas { cursor: pointer; display: block; }
         <div class="xl-formulabar">
           <span class="xl-cellref" id="temp-xl-ref">A1</span>
           <span class="xl-fx">fx</span>
-          <input class="xl-formulaval" id="temp-xl-fval" placeholder="Sélectionnez une cellule..." onchange="tempFormulaBarCommit()" onkeydown="if(event.key==='Enter')tempFormulaBarCommit()">
+          <span class="xl-formulaval" id="temp-xl-fval"></span>
         </div>
-        <div style="display:flex;gap:6px;background:#1e2736;border-bottom:1px solid #4a5568;padding:4px 6px">
+        <div style="display:flex;gap:6px;background:var(--bg2);border-bottom:1px solid var(--border);padding:4px 6px">
           <button class="btn btn-red"  onclick="tempDeleteRow()" style="margin:0;padding:4px 12px;font-size:0.72rem">🗑 Supprimer ligne</button>
           <button class="btn btn-blue" onclick="tempFillDown()"  style="margin:0;padding:4px 12px;font-size:0.72rem">⬇ Remplir ↓</button>
           <span style="font-family:var(--mono);font-size:0.68rem;color:#546e7a;align-self:center;margin-left:8px">
@@ -1276,10 +1270,10 @@ canvas.knob-canvas { cursor: pointer; display: block; }
               </tr>
               <tr>
                 <th class="xl-corner" style="border-bottom:1px solid #4a5568"></th>
-                <th class="xl-col-head" style="font-size:0.65rem;color:var(--text-dim);font-weight:normal;background:var(--bg3);border-bottom:1px solid var(--border)">Temps (min)</th>
-                <th class="xl-col-head" style="font-size:0.65rem;color:var(--text-dim);font-weight:normal;background:var(--bg3);border-bottom:1px solid var(--border)">Sonde 1 (°C)</th>
-                <th class="xl-col-head" style="font-size:0.65rem;color:var(--text-dim);font-weight:normal;background:var(--bg3);border-bottom:1px solid var(--border)">Sonde 2 (°C)</th>
-                <th class="xl-col-head" style="font-size:0.65rem;color:var(--text-dim);font-weight:normal;background:var(--bg3);border-bottom:1px solid var(--border)">Calcul</th>
+                <th class="xl-col-head" style="font-size:0.65rem;color:#546e7a;font-weight:normal;background:#252f3e;border-bottom:1px solid #4a5568">Temps (min)</th>
+                <th class="xl-col-head" style="font-size:0.65rem;color:#546e7a;font-weight:normal;background:#252f3e;border-bottom:1px solid #4a5568">Sonde 1 (°C)</th>
+                <th class="xl-col-head" style="font-size:0.65rem;color:#546e7a;font-weight:normal;background:#252f3e;border-bottom:1px solid #4a5568">Sonde 2 (°C)</th>
+                <th class="xl-col-head" style="font-size:0.65rem;color:#546e7a;font-weight:normal;background:#252f3e;border-bottom:1px solid #4a5568">Calcul</th>
               </tr>
             </thead>
             <tbody id="temp-sheet-body"></tbody>
@@ -1837,10 +1831,8 @@ function marRegression() {
   if (V.length < 3) { alert('Pas assez de points (minimum 3) !'); return; }
   const pvVals = V.map((v, i) => v * P[i]);
   const pvMoy  = pvVals.reduce((a, b) => a + b, 0) / pvVals.length;
-  // Hyperbole P = k/V sur graphique 1 — commence au premier point de mesure
-  const vMin = Math.min(...V);
-  const vMax = Math.max(...V) * 1.1;
-  const vArr = Array.from({length: 200}, (_, i) => vMin + i * (vMax - vMin) / 199);
+  // Hyperbole P = k/V sur graphique 1
+  const vArr = Array.from({length: 60}, (_, i) => 1 + i);
   marChart1.data.datasets[1].data = vArr.map(v => ({ x: v, y: pvMoy / v }));
   marChart1.data.datasets[1].label = `P×V = ${pvMoy.toFixed(0)} kPa·cm³`;
   marChart1.update();
@@ -1916,7 +1908,7 @@ function marRefreshSheet() {
     const tdV = document.createElement('td');
     tdV.className = 'xl-cell col-a' + (isSelected ? ' selected' : '');
     tdV.textContent = v.toFixed(2);
-    tdV.onclick = () => { marSheet.selected = i; marXlUpdateBar('mar', `A${i+1}`, v.toFixed(2)); marRefreshSheet(); };
+    tdV.onclick = () => { marSelectRow('mar', i, `A${i+1}`, v.toFixed(2)); };
     tdV.ondblclick = e => { e.stopPropagation(); marEditCell(tdV, 'volume', i); };
     tr.appendChild(tdV);
 
@@ -1924,7 +1916,7 @@ function marRefreshSheet() {
     const tdP = document.createElement('td');
     tdP.className = 'xl-cell col-b' + (isSelected ? ' selected' : '');
     tdP.textContent = p.toFixed(2);
-    tdP.onclick = () => { marSheet.selected = i; marXlUpdateBar('mar', `B${i+1}`, p.toFixed(2)); marRefreshSheet(); };
+    tdP.onclick = () => { marSelectRow('mar', i, `B${i+1}`, p.toFixed(2)); };
     tdP.ondblclick = e => { e.stopPropagation(); marEditCell(tdP, 'pres', i); };
     tr.appendChild(tdP);
 
@@ -1933,7 +1925,7 @@ function marRefreshSheet() {
     tdC.className = 'xl-cell col-calc' + (isSelected ? ' selected' : '');
     tdC.textContent = calcVal;
     tdC.title = calcRaw;
-    tdC.onclick = () => { marSheet.selected = i; marXlUpdateBar('mar', `C${i+1}`, calcRaw || calcVal); marRefreshSheet(); };
+    tdC.onclick = () => { marSelectRow('mar', i, `C${i+1}`, calcRaw || calcVal); };
     tdC.ondblclick = e => { e.stopPropagation(); marEditCell(tdC, 'calc', i); };
     tr.appendChild(tdC);
 
@@ -1945,36 +1937,23 @@ function marXlUpdateBar(mod, ref, val) {
   const r = document.getElementById(`${mod}-xl-ref`);
   const f = document.getElementById(`${mod}-xl-fval`);
   if (r) r.textContent = ref;
-  if (f) f.value = val;
+  if (f) f.textContent = val;
 }
 
-// Commit depuis la barre de formule
-function marFormulaBarCommit() {
-  const i = marSheet.selected;
-  if (i === null || i === undefined) return;
-  const f = document.getElementById('mar-xl-fval');
-  const raw = f.value.trim();
-  if (raw === '') delete marSheet.formulas[i];
-  else marSheet.formulas[i] = raw;
-  marRefreshSheet();
-}
-function phFormulaBarCommit() {
-  const i = phSheet.selected;
-  if (i === null || i === undefined) return;
-  const f = document.getElementById('ph-xl-fval');
-  const raw = f.value.trim();
-  if (raw === '') delete phSheet.formulas[i];
-  else phSheet.formulas[i] = raw;
-  phRefreshSheet();
-}
-function tempFormulaBarCommit() {
-  const i = tempSheet.selected;
-  if (i === null || i === undefined) return;
-  const f = document.getElementById('temp-xl-fval');
-  const raw = f.value.trim();
-  if (raw === '') delete tempSheet.formulas[i];
-  else tempSheet.formulas[i] = raw;
-  tempRefreshSheet();
+// Sélection de ligne sans reconstruire le DOM (permet le double-clic)
+function marSelectRow(mod, rowIdx, ref, val) {
+  marSheet.selected = rowIdx;
+  marXlUpdateBar(mod, ref, val);
+  // Mise à jour CSS uniquement
+  document.querySelectorAll('#mar-sheet-body tr').forEach((tr, i) => {
+    const cells = tr.querySelectorAll('td');
+    const isSelected = i === rowIdx;
+    if (cells[0]) cells[0].className = 'xl-row-num' + (isSelected ? ' row-selected' : '');
+    cells.forEach((td, ci) => {
+      if (ci === 0) return;
+      td.classList.toggle('selected', isSelected);
+    });
+  });
 }
 
 function marEditCell(td, col, rowIdx) {
@@ -2297,25 +2276,34 @@ function phRefreshSheet() {
     const tdV = document.createElement('td');
     tdV.className = 'xl-cell col-a' + (isSelected ? ' selected' : '');
     tdV.textContent = v.toFixed(2);
-    tdV.onclick = () => { phSheet.selected = i; marXlUpdateBar('ph', `A${i+1}`, v.toFixed(2)); phRefreshSheet(); };
+    tdV.onclick = () => { phSheet.selected = i; marXlUpdateBar('ph', `A${i+1}`, v.toFixed(2)); phSelectRow(i); };
     tdV.ondblclick = e => { e.stopPropagation(); phEditCell(tdV, 'vol', i); };
     tr.appendChild(tdV);
 
     const tdP = document.createElement('td');
     tdP.className = 'xl-cell col-b' + (isSelected ? ' selected' : '');
     tdP.textContent = ph.toFixed(2);
-    tdP.onclick = () => { phSheet.selected = i; marXlUpdateBar('ph', `B${i+1}`, ph.toFixed(2)); phRefreshSheet(); };
+    tdP.onclick = () => { phSheet.selected = i; marXlUpdateBar('ph', `B${i+1}`, ph.toFixed(2)); phSelectRow(i); };
     tdP.ondblclick = e => { e.stopPropagation(); phEditCell(tdP, 'ph', i); };
     tr.appendChild(tdP);
 
     const tdC = document.createElement('td');
     tdC.className = 'xl-cell col-calc' + (isSelected ? ' selected' : '');
     tdC.textContent = calcVal; tdC.title = calcRaw;
-    tdC.onclick = () => { phSheet.selected = i; marXlUpdateBar('ph', `C${i+1}`, calcRaw || calcVal); phRefreshSheet(); };
+    tdC.onclick = () => { phSheet.selected = i; marXlUpdateBar('ph', `C${i+1}`, calcRaw || calcVal); phSelectRow(i); };
     tdC.ondblclick = e => { e.stopPropagation(); phEditCell(tdC, 'calc', i); };
     tr.appendChild(tdC);
 
     tb.appendChild(tr);
+  });
+}
+
+function phSelectRow(rowIdx) {
+  document.querySelectorAll('#ph-sheet-body tr').forEach((tr, i) => {
+    const cells = tr.querySelectorAll('td');
+    const isSelected = i === rowIdx;
+    if (cells[0]) cells[0].className = 'xl-row-num' + (isSelected ? ' row-selected' : '');
+    cells.forEach((td, ci) => { if (ci > 0) td.classList.toggle('selected', isSelected); });
   });
 }
 
@@ -2434,32 +2422,41 @@ function tempRefreshSheet() {
     const tdT = document.createElement('td');
     tdT.className = 'xl-cell col-a' + (isSelected ? ' selected' : '');
     tdT.textContent = time.toFixed(2);
-    tdT.onclick = () => { tempSheet.selected = i; marXlUpdateBar('temp', `A${i+1}`, time.toFixed(2)); tempRefreshSheet(); };
+    tdT.onclick = () => { tempSheet.selected = i; marXlUpdateBar('temp', `A${i+1}`, time.toFixed(2)); tempSelectRow(i); };
     tdT.ondblclick = e => { e.stopPropagation(); tempEditCell(tdT, 'time', i); };
     tr.appendChild(tdT);
 
     const td1 = document.createElement('td');
     td1.className = 'xl-cell col-b' + (isSelected ? ' selected' : '');
     td1.textContent = t1.toFixed(2);
-    td1.onclick = () => { tempSheet.selected = i; marXlUpdateBar('temp', `B${i+1}`, t1.toFixed(2)); tempRefreshSheet(); };
+    td1.onclick = () => { tempSheet.selected = i; marXlUpdateBar('temp', `B${i+1}`, t1.toFixed(2)); tempSelectRow(i); };
     td1.ondblclick = e => { e.stopPropagation(); tempEditCell(td1, 't1', i); };
     tr.appendChild(td1);
 
     const td2 = document.createElement('td');
     td2.className = 'xl-cell col-c' + (isSelected ? ' selected' : '');
     td2.textContent = !isNaN(t2) ? t2.toFixed(2) : '—';
-    td2.onclick = () => { tempSheet.selected = i; marXlUpdateBar('temp', `C${i+1}`, !isNaN(t2)?t2.toFixed(2):''); tempRefreshSheet(); };
+    td2.onclick = () => { tempSheet.selected = i; marXlUpdateBar('temp', `C${i+1}`, !isNaN(t2)?t2.toFixed(2):''); tempSelectRow(i); };
     td2.ondblclick = e => { e.stopPropagation(); tempEditCell(td2, 't2', i); };
     tr.appendChild(td2);
 
     const tdC = document.createElement('td');
     tdC.className = 'xl-cell col-calc' + (isSelected ? ' selected' : '');
     tdC.textContent = calcVal; tdC.title = calcRaw;
-    tdC.onclick = () => { tempSheet.selected = i; marXlUpdateBar('temp', `D${i+1}`, calcRaw || calcVal); tempRefreshSheet(); };
+    tdC.onclick = () => { tempSheet.selected = i; marXlUpdateBar('temp', `D${i+1}`, calcRaw || calcVal); tempSelectRow(i); };
     tdC.ondblclick = e => { e.stopPropagation(); tempEditCell(tdC, 'calc', i); };
     tr.appendChild(tdC);
 
     tb.appendChild(tr);
+  });
+}
+
+function tempSelectRow(rowIdx) {
+  document.querySelectorAll('#temp-sheet-body tr').forEach((tr, i) => {
+    const cells = tr.querySelectorAll('td');
+    const isSelected = i === rowIdx;
+    if (cells[0]) cells[0].className = 'xl-row-num' + (isSelected ? ' row-selected' : '');
+    cells.forEach((td, ci) => { if (ci > 0) td.classList.toggle('selected', isSelected); });
   });
 }
 
