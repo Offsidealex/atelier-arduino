@@ -791,7 +791,7 @@ table.data-table tr:last-child td { color: var(--green); }
   letter-spacing: 1px;
 }
 .oscilo-screen-border { background: #000; padding: 10px; border-radius: 2px; }
-#oscilo-canvas { display: block; width: 100%; cursor: crosshair; }
+#oscilo-canvas { display: block; width: 100%; aspect-ratio: 5/4; cursor: crosshair; }
 .oscilo-info-bar {
   display: flex;
   justify-content: space-between;
@@ -810,7 +810,7 @@ table.data-table tr:last-child td { color: var(--green); }
 /* Layout spécifique oscilloscope : écran à gauche, contrôles à droite + plus larges */
 #page-oscilo { display: flex; flex-direction: row; gap: 20px; align-items: flex-start; }
 #page-oscilo .panel-right { order: 1; flex: 1; }
-#page-oscilo .panel-left  { order: 2; width: 480px; flex-shrink: 0; }
+#page-oscilo .panel-left  { order: 2; width: 600px; flex-shrink: 0; }
 canvas.knob-canvas { cursor: pointer; display: block; }
 .module-card.oscilo::before { background: #7c4dff; }
 .module-card.oscilo h2 { color: #b39ddb; }
@@ -2654,7 +2654,7 @@ function osciloAnimLoop() {
 function osciloStartAnim() {
   if(OSCILO.active) return;
   const canvas = document.getElementById('oscilo-canvas');
-  if(canvas) canvas.width = canvas.offsetWidth || 800;
+  if(canvas) { canvas.width = canvas.offsetWidth || 800; canvas.height = Math.round(canvas.width * 4 / 5); }
   OSCILO.active = true;
   osciloAnimLoop();
 }
@@ -2833,7 +2833,7 @@ function osciloReset(){
     <div class="oscilo-screen-wrap">
       <div class="oscilo-title-bar">Lycée Denis Diderot — Simulateur Oscilloscope</div>
       <div class="oscilo-screen-border">
-        <canvas id="oscilo-canvas" height="560"></canvas>
+        <canvas id="oscilo-canvas"></canvas>
       </div>
       <div class="oscilo-info-bar">
         <span id="oscilo-ch1-label">CH1 &nbsp; 5 V</span>
