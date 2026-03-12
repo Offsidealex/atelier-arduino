@@ -679,7 +679,7 @@ table.data-table tr:last-child td { color: var(--green); }
   font-family: 'Segoe UI', Arial, sans-serif;
   font-size: 0.82rem;
   padding: 2px 6px;
-  text-align: center;
+  text-align: right;
   outline: none;
   box-sizing: border-box;
 }
@@ -688,7 +688,7 @@ table.data-table tr:last-child td { color: var(--green); }
 .xl-cell.col-b { color: #ef9a9a; }
 .xl-cell.col-c { color: #a5d6a7; }
 .xl-cell.col-d { color: #ffcc80; }
-.xl-cell.col-calc { color: #ffcc80; font-style: italic; }
+.xl-cell.col-calc { color: #ffcc80; }
 .xl-row-num.row-selected { background: #1a3a5c; color: #90caf9; }
 .calib-badge {
   display: inline-block;
@@ -986,14 +986,14 @@ canvas.knob-canvas { cursor: pointer; display: block; }
             <thead>
               <tr>
                 <th class="xl-corner"></th>
-                <th class="xl-col-head" onclick="phSortSheet('vol')" id="ph-xlh-a">A</th>
-                <th class="xl-col-head" onclick="phSortSheet('ph')"  id="ph-xlh-b">B</th>
+                <th class="xl-col-head" id="ph-xlh-a">A</th>
+                <th class="xl-col-head" id="ph-xlh-b">B</th>
                 <th class="xl-col-head" id="ph-xlh-c">C</th>
               </tr>
               <tr>
                 <th class="xl-corner" style="border-bottom:1px solid #4a5568"></th>
-                <th class="xl-col-head" style="font-size:0.65rem;color:var(--text-dim);font-weight:normal;background:var(--bg3);border-bottom:1px solid var(--border)">Volume (mL)</th>
-                <th class="xl-col-head" style="font-size:0.65rem;color:var(--text-dim);font-weight:normal;background:var(--bg3);border-bottom:1px solid var(--border)">pH</th>
+                <th class="xl-col-head" style="font-size:0.65rem;color:var(--text-dim);font-weight:normal;background:var(--bg3);border-bottom:1px solid var(--border);cursor:pointer" onclick="phSortSheet('vol')" id="ph-xlh-a2">Volume (mL) <span id="ph-sort-vol"></span></th>
+                <th class="xl-col-head" style="font-size:0.65rem;color:var(--text-dim);font-weight:normal;background:var(--bg3);border-bottom:1px solid var(--border);cursor:pointer" onclick="phSortSheet('ph')" id="ph-xlh-b2">pH <span id="ph-sort-ph"></span></th>
                 <th class="xl-col-head" style="font-size:0.65rem;color:var(--text-dim);font-weight:normal;background:var(--bg3);border-bottom:1px solid var(--border)">Calcul</th>
               </tr>
             </thead>
@@ -1141,14 +1141,14 @@ canvas.knob-canvas { cursor: pointer; display: block; }
             <thead>
               <tr>
                 <th class="xl-corner"></th>
-                <th class="xl-col-head" onclick="marSortSheet('volume')" id="mar-xlh-a">A</th>
-                <th class="xl-col-head" onclick="marSortSheet('pres')"   id="mar-xlh-b">B</th>
+                <th class="xl-col-head" id="mar-xlh-a">A</th>
+                <th class="xl-col-head" id="mar-xlh-b">B</th>
                 <th class="xl-col-head" id="mar-xlh-c">C</th>
               </tr>
               <tr>
                 <th class="xl-corner" style="font-size:0.6rem;color:#546e7a;border-bottom:1px solid #4a5568"></th>
-                <th class="xl-col-head" style="font-size:0.65rem;color:var(--text-dim);font-weight:normal;background:var(--bg3);border-bottom:1px solid var(--border)">Volume (cm³)</th>
-                <th class="xl-col-head" style="font-size:0.65rem;color:var(--text-dim);font-weight:normal;background:var(--bg3);border-bottom:1px solid var(--border)">Pression (kPa)</th>
+                <th class="xl-col-head" style="font-size:0.65rem;color:var(--text-dim);font-weight:normal;background:var(--bg3);border-bottom:1px solid var(--border);cursor:pointer" onclick="marSortSheet('volume')" id="mar-xlh-a2">Volume (cm³) <span id="mar-sort-volume"></span></th>
+                <th class="xl-col-head" style="font-size:0.65rem;color:var(--text-dim);font-weight:normal;background:var(--bg3);border-bottom:1px solid var(--border);cursor:pointer" onclick="marSortSheet('pres')" id="mar-xlh-b2">Pression (kPa) <span id="mar-sort-pres"></span></th>
                 <th class="xl-col-head" style="font-size:0.65rem;color:var(--text-dim);font-weight:normal;background:var(--bg3);border-bottom:1px solid var(--border)">Calcul</th>
               </tr>
             </thead>
@@ -1268,16 +1268,16 @@ canvas.knob-canvas { cursor: pointer; display: block; }
             <thead>
               <tr>
                 <th class="xl-corner"></th>
-                <th class="xl-col-head" onclick="tempSortSheet('time')" id="temp-xlh-a">A</th>
-                <th class="xl-col-head" onclick="tempSortSheet('t1')"   id="temp-xlh-b">B</th>
-                <th class="xl-col-head" onclick="tempSortSheet('t2')"   id="temp-xlh-c">C</th>
+                <th class="xl-col-head" id="temp-xlh-a">A</th>
+                <th class="xl-col-head" id="temp-xlh-b">B</th>
+                <th class="xl-col-head" id="temp-xlh-c">C</th>
                 <th class="xl-col-head" id="temp-xlh-d">D</th>
               </tr>
               <tr>
                 <th class="xl-corner" style="border-bottom:1px solid #4a5568"></th>
-                <th class="xl-col-head" style="font-size:0.65rem;color:var(--text-dim);font-weight:normal;background:var(--bg3);border-bottom:1px solid var(--border)">Temps (min)</th>
-                <th class="xl-col-head" style="font-size:0.65rem;color:var(--text-dim);font-weight:normal;background:var(--bg3);border-bottom:1px solid var(--border)">Sonde 1 (°C)</th>
-                <th class="xl-col-head" style="font-size:0.65rem;color:var(--text-dim);font-weight:normal;background:var(--bg3);border-bottom:1px solid var(--border)">Sonde 2 (°C)</th>
+                <th class="xl-col-head" style="font-size:0.65rem;color:var(--text-dim);font-weight:normal;background:var(--bg3);border-bottom:1px solid var(--border);cursor:pointer" onclick="tempSortSheet('time')" id="temp-xlh-a2">Temps (min) <span id="temp-sort-time"></span></th>
+                <th class="xl-col-head" style="font-size:0.65rem;color:var(--text-dim);font-weight:normal;background:var(--bg3);border-bottom:1px solid var(--border);cursor:pointer" onclick="tempSortSheet('t1')" id="temp-xlh-b2">Sonde 1 (°C) <span id="temp-sort-t1"></span></th>
+                <th class="xl-col-head" style="font-size:0.65rem;color:var(--text-dim);font-weight:normal;background:var(--bg3);border-bottom:1px solid var(--border);cursor:pointer" onclick="tempSortSheet('t2')" id="temp-xlh-c2">Sonde 2 (°C) <span id="temp-sort-t2"></span></th>
                 <th class="xl-col-head" style="font-size:0.65rem;color:var(--text-dim);font-weight:normal;background:var(--bg3);border-bottom:1px solid var(--border)">Calcul</th>
               </tr>
             </thead>
@@ -1836,7 +1836,7 @@ function marRegression() {
   if (V.length < 3) { alert('Pas assez de points (minimum 3) !'); return; }
   const pvVals = V.map((v, i) => v * P[i]);
   const pvMoy  = pvVals.reduce((a, b) => a + b, 0) / pvVals.length;
-  // Hyperbole P = k/V sur graphique 1 — part du premier point mesuré
+  // Hyperbole P = k/V depuis le premier point mesuré
   const vMin = Math.min(...V);
   const vMax = Math.max(...V) * 1.1;
   const vArr = Array.from({length: 200}, (_, i) => vMin + i * (vMax - vMin) / 199);
@@ -1944,61 +1944,7 @@ function marXlUpdateBar(mod, ref, val) {
   const r = document.getElementById(`${mod}-xl-ref`);
   const f = document.getElementById(`${mod}-xl-fval`);
   if (r) r.textContent = ref;
-  if (f) { f.value = val !== undefined ? val : ''; f._lastMod = mod; }
-}
-
-// ── Sélection sans rebuild DOM (préserve le dblclick) ──
-function marSelectRow(rowIdx, mod, ref, val) {
-  marSheet.selected = rowIdx;
-  marXlUpdateBar(mod, ref, val);
-  document.querySelectorAll('#mar-sheet-body tr').forEach((tr, i) => {
-    const sel = i === rowIdx;
-    tr.querySelectorAll('td').forEach((td, ci) => {
-      if (ci === 0) td.className = 'xl-row-num' + (sel ? ' row-selected' : '');
-      else td.classList.toggle('selected', sel);
-    });
-  });
-}
-function phSelectRow(rowIdx, ref, val) {
-  phSheet.selected = rowIdx;
-  marXlUpdateBar('ph', ref, val);
-  document.querySelectorAll('#ph-sheet-body tr').forEach((tr, i) => {
-    const sel = i === rowIdx;
-    tr.querySelectorAll('td').forEach((td, ci) => {
-      if (ci === 0) td.className = 'xl-row-num' + (sel ? ' row-selected' : '');
-      else td.classList.toggle('selected', sel);
-    });
-  });
-}
-function tempSelectRow(rowIdx, ref, val) {
-  tempSheet.selected = rowIdx;
-  marXlUpdateBar('temp', ref, val);
-  document.querySelectorAll('#temp-sheet-body tr').forEach((tr, i) => {
-    const sel = i === rowIdx;
-    tr.querySelectorAll('td').forEach((td, ci) => {
-      if (ci === 0) td.className = 'xl-row-num' + (sel ? ' row-selected' : '');
-      else td.classList.toggle('selected', sel);
-    });
-  });
-}
-// ── Commit depuis la barre de formule ──
-function marFormulaBarCommit() {
-  const i = marSheet.selected; if (i === null || i === undefined) return;
-  const raw = document.getElementById('mar-xl-fval').value.trim();
-  if (raw === '') delete marSheet.formulas[i]; else marSheet.formulas[i] = raw;
-  marRefreshSheet();
-}
-function phFormulaBarCommit() {
-  const i = phSheet.selected; if (i === null || i === undefined) return;
-  const raw = document.getElementById('ph-xl-fval').value.trim();
-  if (raw === '') delete phSheet.formulas[i]; else phSheet.formulas[i] = raw;
-  phRefreshSheet();
-}
-function tempFormulaBarCommit() {
-  const i = tempSheet.selected; if (i === null || i === undefined) return;
-  const raw = document.getElementById('temp-xl-fval').value.trim();
-  if (raw === '') delete tempSheet.formulas[i]; else tempSheet.formulas[i] = raw;
-  tempRefreshSheet();
+  if (f) f.value = val !== undefined ? String(val) : '';
 }
 
 function marEditCell(td, col, rowIdx) {
@@ -2106,6 +2052,9 @@ function marSortSheet(col) {
   });
   marSheet.formulas = newF;
   marSheet.selected = null;
+  // Indicateurs ▲▼
+  ['volume','pres'].forEach(c => { const el = document.getElementById(`mar-sort-${c}`); if(el) el.textContent=''; });
+  const indM = document.getElementById(`mar-sort-${col}`); if(indM) indM.textContent = asc ? ' ▲' : ' ▼';
   marUpdateCharts(); marUpdateStats(); marRefreshSheet();
 }
 
@@ -2412,6 +2361,8 @@ function phSortSheet(col) {
   state.phValues  = idx.map(i => state.phValues[i]);
   const newF = {}; idx.forEach((old,ni) => { if(old in phSheet.formulas) newF[ni]=phSheet.formulas[old]; });
   phSheet.formulas = newF; phSheet.selected = null;
+  ['vol','ph'].forEach(c => { const el=document.getElementById(`ph-sort-${c}`); if(el) el.textContent=''; });
+  const indPh=document.getElementById(`ph-sort-${col}`); if(indPh) indPh.textContent=asc?' ▲':' ▼';
   phChart.data.datasets[0].data = state.phVolumes.map((v,i)=>({x:v,y:state.phValues[i]})); phChart.update();
   const tb2 = document.getElementById('ph-table-body'); tb2.innerHTML = '';
   state.phVolumes.forEach((v,i) => { const tr=document.createElement('tr'); tr.innerHTML=`<td>${i+1}</td><td>${v.toFixed(2)}</td><td>${state.phValues[i].toFixed(2)}</td>`; tb2.appendChild(tr); });
@@ -2553,7 +2504,10 @@ function tempSortSheet(col) {
     let vb = col==='time'?parseFloat(b[0]) : col==='t1'?parseFloat(b[1]) : col==='t2'?parseFloat(b[2]) : 0;
     return asc ? va-vb : vb-va;
   });
-  tempSheet.selected = null; tempRefreshSheet();
+  tempSheet.selected = null;
+  ['time','t1','t2'].forEach(c => { const el=document.getElementById(`temp-sort-${c}`); if(el) el.textContent=''; });
+  const indT=document.getElementById(`temp-sort-${col}`); if(indT) indT.textContent=asc?' ▲':' ▼';
+  tempRefreshSheet();
 }
 
 const OSCILO = {
