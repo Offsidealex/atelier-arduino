@@ -582,7 +582,13 @@ table.data-table tr:last-child td { color: var(--green); }
   font-size: 0.8rem;
   color: #cfd8dc;
   flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 2px 4px;
 }
+.xl-formulaval:focus { background: #0d1117; border-radius: 2px; }
+body.light .xl-formulaval:focus { background: #fff; }
 .xl-scroll {
   overflow: auto;
   max-height: 650px;
@@ -967,7 +973,7 @@ canvas.knob-canvas { cursor: pointer; display: block; }
         <div class="xl-formulabar">
           <span class="xl-cellref" id="ph-xl-ref">A1</span>
           <span class="xl-fx">fx</span>
-          <span class="xl-formulaval" id="ph-xl-fval"></span>
+          <input class="xl-formulaval" id="ph-xl-fval" placeholder="Sélectionnez une cellule..." onchange="phFormulaBarCommit()" onkeydown="if(event.key==='Enter')phFormulaBarCommit()">
         </div>
         <div style="display:flex;gap:6px;background:#1e2736;border-bottom:1px solid #4a5568;padding:4px 6px">
           <button class="btn btn-red"  onclick="phDeleteRow()" style="margin:0;padding:4px 12px;font-size:0.72rem">🗑 Supprimer ligne</button>
@@ -987,9 +993,9 @@ canvas.knob-canvas { cursor: pointer; display: block; }
               </tr>
               <tr>
                 <th class="xl-corner" style="border-bottom:1px solid #4a5568"></th>
-                <th class="xl-col-head" style="font-size:0.65rem;color:#546e7a;font-weight:normal;background:#252f3e;border-bottom:1px solid #4a5568">Volume (mL)</th>
-                <th class="xl-col-head" style="font-size:0.65rem;color:#546e7a;font-weight:normal;background:#252f3e;border-bottom:1px solid #4a5568">pH</th>
-                <th class="xl-col-head" style="font-size:0.65rem;color:#546e7a;font-weight:normal;background:#252f3e;border-bottom:1px solid #4a5568">Calcul</th>
+                <th class="xl-col-head" style="font-size:0.65rem;color:var(--text-dim);font-weight:normal;background:var(--bg3);border-bottom:1px solid var(--border)">Volume (mL)</th>
+                <th class="xl-col-head" style="font-size:0.65rem;color:var(--text-dim);font-weight:normal;background:var(--bg3);border-bottom:1px solid var(--border)">pH</th>
+                <th class="xl-col-head" style="font-size:0.65rem;color:var(--text-dim);font-weight:normal;background:var(--bg3);border-bottom:1px solid var(--border)">Calcul</th>
               </tr>
             </thead>
             <tbody id="ph-sheet-body"></tbody>
@@ -1120,7 +1126,7 @@ canvas.knob-canvas { cursor: pointer; display: block; }
         <div class="xl-formulabar">
           <span class="xl-cellref" id="mar-xl-ref">A1</span>
           <span class="xl-fx">fx</span>
-          <span class="xl-formulaval" id="mar-xl-fval"></span>
+          <input class="xl-formulaval" id="mar-xl-fval" placeholder="Sélectionnez une cellule..." onchange="marFormulaBarCommit()" onkeydown="if(event.key==='Enter')marFormulaBarCommit()">
         </div>
         <!-- Boutons -->
         <div style="display:flex;gap:0;background:#1e2736;border-bottom:1px solid #4a5568;padding:4px 6px;gap:6px">
@@ -1142,9 +1148,9 @@ canvas.knob-canvas { cursor: pointer; display: block; }
               </tr>
               <tr>
                 <th class="xl-corner" style="font-size:0.6rem;color:#546e7a;border-bottom:1px solid #4a5568"></th>
-                <th class="xl-col-head" style="font-size:0.65rem;color:#546e7a;font-weight:normal;background:#252f3e;border-bottom:1px solid #4a5568">Volume (cm³)</th>
-                <th class="xl-col-head" style="font-size:0.65rem;color:#546e7a;font-weight:normal;background:#252f3e;border-bottom:1px solid #4a5568">Pression (kPa)</th>
-                <th class="xl-col-head" style="font-size:0.65rem;color:#546e7a;font-weight:normal;background:#252f3e;border-bottom:1px solid #4a5568">Calcul</th>
+                <th class="xl-col-head" style="font-size:0.65rem;color:var(--text-dim);font-weight:normal;background:var(--bg3);border-bottom:1px solid var(--border)">Volume (cm³)</th>
+                <th class="xl-col-head" style="font-size:0.65rem;color:var(--text-dim);font-weight:normal;background:var(--bg3);border-bottom:1px solid var(--border)">Pression (kPa)</th>
+                <th class="xl-col-head" style="font-size:0.65rem;color:var(--text-dim);font-weight:normal;background:var(--bg3);border-bottom:1px solid var(--border)">Calcul</th>
               </tr>
             </thead>
             <tbody id="mar-sheet-body"></tbody>
@@ -1249,7 +1255,7 @@ canvas.knob-canvas { cursor: pointer; display: block; }
         <div class="xl-formulabar">
           <span class="xl-cellref" id="temp-xl-ref">A1</span>
           <span class="xl-fx">fx</span>
-          <span class="xl-formulaval" id="temp-xl-fval"></span>
+          <input class="xl-formulaval" id="temp-xl-fval" placeholder="Sélectionnez une cellule..." onchange="tempFormulaBarCommit()" onkeydown="if(event.key==='Enter')tempFormulaBarCommit()">
         </div>
         <div style="display:flex;gap:6px;background:#1e2736;border-bottom:1px solid #4a5568;padding:4px 6px">
           <button class="btn btn-red"  onclick="tempDeleteRow()" style="margin:0;padding:4px 12px;font-size:0.72rem">🗑 Supprimer ligne</button>
@@ -1270,10 +1276,10 @@ canvas.knob-canvas { cursor: pointer; display: block; }
               </tr>
               <tr>
                 <th class="xl-corner" style="border-bottom:1px solid #4a5568"></th>
-                <th class="xl-col-head" style="font-size:0.65rem;color:#546e7a;font-weight:normal;background:#252f3e;border-bottom:1px solid #4a5568">Temps (min)</th>
-                <th class="xl-col-head" style="font-size:0.65rem;color:#546e7a;font-weight:normal;background:#252f3e;border-bottom:1px solid #4a5568">Sonde 1 (°C)</th>
-                <th class="xl-col-head" style="font-size:0.65rem;color:#546e7a;font-weight:normal;background:#252f3e;border-bottom:1px solid #4a5568">Sonde 2 (°C)</th>
-                <th class="xl-col-head" style="font-size:0.65rem;color:#546e7a;font-weight:normal;background:#252f3e;border-bottom:1px solid #4a5568">Calcul</th>
+                <th class="xl-col-head" style="font-size:0.65rem;color:var(--text-dim);font-weight:normal;background:var(--bg3);border-bottom:1px solid var(--border)">Temps (min)</th>
+                <th class="xl-col-head" style="font-size:0.65rem;color:var(--text-dim);font-weight:normal;background:var(--bg3);border-bottom:1px solid var(--border)">Sonde 1 (°C)</th>
+                <th class="xl-col-head" style="font-size:0.65rem;color:var(--text-dim);font-weight:normal;background:var(--bg3);border-bottom:1px solid var(--border)">Sonde 2 (°C)</th>
+                <th class="xl-col-head" style="font-size:0.65rem;color:var(--text-dim);font-weight:normal;background:var(--bg3);border-bottom:1px solid var(--border)">Calcul</th>
               </tr>
             </thead>
             <tbody id="temp-sheet-body"></tbody>
@@ -1831,8 +1837,10 @@ function marRegression() {
   if (V.length < 3) { alert('Pas assez de points (minimum 3) !'); return; }
   const pvVals = V.map((v, i) => v * P[i]);
   const pvMoy  = pvVals.reduce((a, b) => a + b, 0) / pvVals.length;
-  // Hyperbole P = k/V sur graphique 1
-  const vArr = Array.from({length: 60}, (_, i) => 1 + i);
+  // Hyperbole P = k/V sur graphique 1 — commence au premier point de mesure
+  const vMin = Math.min(...V);
+  const vMax = Math.max(...V) * 1.1;
+  const vArr = Array.from({length: 200}, (_, i) => vMin + i * (vMax - vMin) / 199);
   marChart1.data.datasets[1].data = vArr.map(v => ({ x: v, y: pvMoy / v }));
   marChart1.data.datasets[1].label = `P×V = ${pvMoy.toFixed(0)} kPa·cm³`;
   marChart1.update();
@@ -1937,7 +1945,36 @@ function marXlUpdateBar(mod, ref, val) {
   const r = document.getElementById(`${mod}-xl-ref`);
   const f = document.getElementById(`${mod}-xl-fval`);
   if (r) r.textContent = ref;
-  if (f) f.textContent = val;
+  if (f) f.value = val;
+}
+
+// Commit depuis la barre de formule
+function marFormulaBarCommit() {
+  const i = marSheet.selected;
+  if (i === null || i === undefined) return;
+  const f = document.getElementById('mar-xl-fval');
+  const raw = f.value.trim();
+  if (raw === '') delete marSheet.formulas[i];
+  else marSheet.formulas[i] = raw;
+  marRefreshSheet();
+}
+function phFormulaBarCommit() {
+  const i = phSheet.selected;
+  if (i === null || i === undefined) return;
+  const f = document.getElementById('ph-xl-fval');
+  const raw = f.value.trim();
+  if (raw === '') delete phSheet.formulas[i];
+  else phSheet.formulas[i] = raw;
+  phRefreshSheet();
+}
+function tempFormulaBarCommit() {
+  const i = tempSheet.selected;
+  if (i === null || i === undefined) return;
+  const f = document.getElementById('temp-xl-fval');
+  const raw = f.value.trim();
+  if (raw === '') delete tempSheet.formulas[i];
+  else tempSheet.formulas[i] = raw;
+  tempRefreshSheet();
 }
 
 function marEditCell(td, col, rowIdx) {
