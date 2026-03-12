@@ -2774,9 +2774,9 @@ function osciloReset(){
       <div class="widget-header">⚡ Tension efficace Ueff</div>
       <div class="widget-body">
         <div style="display:flex;align-items:center;gap:10px">
-          <button class="btn btn-red" style="margin:0;padding:4px 12px;font-size:1rem;flex-shrink:0" onclick="osciloChangeUeff(-0.1)">−</button>
+          <button class="btn btn-red" style="margin:0;padding:6px 18px;font-size:1.2rem;width:auto;flex-shrink:0" onclick="osciloChangeUeff(-0.1)">−</button>
           <div class="digi-display" id="oscilo-ueff-display">6.00 V</div>
-          <button class="btn btn-green" style="margin:0;padding:4px 12px;font-size:1rem;flex-shrink:0" onclick="osciloChangeUeff(0.1)">+</button>
+          <button class="btn btn-green" style="margin:0;padding:6px 18px;font-size:1.2rem;width:auto;flex-shrink:0" onclick="osciloChangeUeff(0.1)">+</button>
         </div>
         <input type="number" id="oscilo-ueff" value="6.0" min="0" max="15" step="0.1" style="display:none" oninput="osciloUpdateUeff()">
         <div id="oscilo-umax-display" style="display:none"></div>
@@ -2788,9 +2788,9 @@ function osciloReset(){
       <div class="widget-header">〰️ Fréquence</div>
       <div class="widget-body">
         <div style="display:flex;align-items:center;gap:10px">
-          <button class="btn btn-red" style="margin:0;padding:4px 12px;font-size:1rem;flex-shrink:0" onclick="osciloChangeFreq(-10)">−</button>
+          <button class="btn btn-red" style="margin:0;padding:6px 18px;font-size:1.2rem;width:auto;flex-shrink:0" onclick="osciloChangeFreq(-10)">−</button>
           <div class="digi-display" id="oscilo-freq-display">50 Hz</div>
-          <button class="btn btn-green" style="margin:0;padding:4px 12px;font-size:1rem;flex-shrink:0" onclick="osciloChangeFreq(10)">+</button>
+          <button class="btn btn-green" style="margin:0;padding:6px 18px;font-size:1.2rem;width:auto;flex-shrink:0" onclick="osciloChangeFreq(10)">+</button>
         </div>
         <input type="number" id="oscilo-freq" value="50" min="1" max="20000" step="1" style="display:none" oninput="osciloUpdateFreq()">
         <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
@@ -2863,19 +2863,6 @@ function osciloReset(){
         <span id="oscilo-ch1-label">CH1 &nbsp; 5 V</span>
         <span style="color:#aac4ff;font-size:0.7rem">▶ SINUSOÏDE — 1 voie</span>
         <span id="oscilo-time-label">M &nbsp; 5 ms</span>
-      </div>
-    </div>
-
-    <!-- Mesures -->
-    <div class="widget" style="margin-top:14px">
-      <div class="widget-header">📐 Mesures calculées</div>
-      <div class="widget-body">
-        <div class="stats-row" style="grid-template-columns:repeat(4,1fr)">
-          <div class="stat-cell"><div class="stat-val" id="oscilo-m-ueff">6.00 V</div><div class="stat-lbl">Ueff</div></div>
-          <div class="stat-cell" style="display:none"><div class="stat-val" id="oscilo-m-umax">8.49 V</div><div class="stat-lbl">Umax</div></div>
-          <div class="stat-cell"><div class="stat-val" id="oscilo-m-freq">50 Hz</div><div class="stat-lbl">Fréquence</div></div>
-          <div class="stat-cell" style="display:none"><div class="stat-val" id="oscilo-m-period">20.0 ms</div><div class="stat-lbl">Période T</div></div>
-        </div>
       </div>
     </div>
   </div>
