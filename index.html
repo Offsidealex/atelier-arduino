@@ -582,13 +582,18 @@ table.data-table tr:last-child td { color: var(--green); }
   font-size: 0.8rem;
   color: #cfd8dc;
   flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 2px 4px;
 }
+.xl-formulaval:focus { background: rgba(0,0,0,0.2); border-radius: 2px; }
 .xl-scroll {
   overflow: auto;
   max-height: 650px;
 }
 .xl-scroll::-webkit-scrollbar { width: 10px; height: 10px; }
-.xl-scroll::-webkit-scrollbar-track { background: #1e2736; }
+.xl-scroll::-webkit-scrollbar-track { background: var(--bg2); }
 .xl-scroll::-webkit-scrollbar-thumb { background: #4a5568; border-radius: 2px; }
 .xl-table {
   border-collapse: collapse;
@@ -967,7 +972,7 @@ canvas.knob-canvas { cursor: pointer; display: block; }
         <div class="xl-formulabar">
           <span class="xl-cellref" id="ph-xl-ref">A1</span>
           <span class="xl-fx">fx</span>
-          <span class="xl-formulaval" id="ph-xl-fval"></span>
+          <input class="xl-formulaval" id="ph-xl-fval" placeholder="Sélectionnez une cellule..." onkeydown="if(event.key==='Enter')phFormulaBarCommit()" onblur="phFormulaBarCommit()">
         </div>
         <div style="display:flex;gap:6px;background:var(--bg2);border-bottom:1px solid var(--border);padding:4px 6px">
           <button class="btn btn-red"  onclick="phDeleteRow()" style="margin:0;padding:4px 12px;font-size:0.72rem">🗑 Supprimer ligne</button>
@@ -1120,7 +1125,7 @@ canvas.knob-canvas { cursor: pointer; display: block; }
         <div class="xl-formulabar">
           <span class="xl-cellref" id="mar-xl-ref">A1</span>
           <span class="xl-fx">fx</span>
-          <span class="xl-formulaval" id="mar-xl-fval"></span>
+          <input class="xl-formulaval" id="mar-xl-fval" placeholder="Sélectionnez une cellule..." onkeydown="if(event.key==='Enter')marFormulaBarCommit()" onblur="marFormulaBarCommit()">
         </div>
         <!-- Boutons -->
         <div style="display:flex;gap:6px;background:var(--bg2);border-bottom:1px solid var(--border);padding:4px 6px">
@@ -1249,7 +1254,7 @@ canvas.knob-canvas { cursor: pointer; display: block; }
         <div class="xl-formulabar">
           <span class="xl-cellref" id="temp-xl-ref">A1</span>
           <span class="xl-fx">fx</span>
-          <span class="xl-formulaval" id="temp-xl-fval"></span>
+          <input class="xl-formulaval" id="temp-xl-fval" placeholder="Sélectionnez une cellule..." onkeydown="if(event.key==='Enter')tempFormulaBarCommit()" onblur="tempFormulaBarCommit()">
         </div>
         <div style="display:flex;gap:6px;background:var(--bg2);border-bottom:1px solid var(--border);padding:4px 6px">
           <button class="btn btn-red"  onclick="tempDeleteRow()" style="margin:0;padding:4px 12px;font-size:0.72rem">🗑 Supprimer ligne</button>
@@ -1831,8 +1836,10 @@ function marRegression() {
   if (V.length < 3) { alert('Pas assez de points (minimum 3) !'); return; }
   const pvVals = V.map((v, i) => v * P[i]);
   const pvMoy  = pvVals.reduce((a, b) => a + b, 0) / pvVals.length;
-  // Hyperbole P = k/V sur graphique 1
-  const vArr = Array.from({length: 60}, (_, i) => 1 + i);
+  // Hyperbole P = k/V sur graphique 1 — part du premier point mesuré
+  const vMin = Math.min(...V);
+  const vMax = Math.max(...V) * 1.1;
+  const vArr = Array.from({length: 200}, (_, i) => vMin + i * (vMax - vMin) / 199);
   marChart1.data.datasets[1].data = vArr.map(v => ({ x: v, y: pvMoy / v }));
   marChart1.data.datasets[1].label = `P×V = ${pvMoy.toFixed(0)} kPa·cm³`;
   marChart1.update();
@@ -1908,7 +1915,7 @@ function marRefreshSheet() {
     const tdV = document.createElement('td');
     tdV.className = 'xl-cell col-a' + (isSelected ? ' selected' : '');
     tdV.textContent = v.toFixed(2);
-    tdV.onclick = () => { marSheet.selected = i; marXlUpdateBar('mar', `A${i+1}`, v.toFixed(2)); marRefreshSheet(); };
+    tdV.onclick = () => { marSelectRow(i, 'mar', `A${i+1}`, v.toFixed(2)); };
     tdV.ondblclick = e => { e.stopPropagation(); marEditCell(tdV, 'volume', i); };
     tr.appendChild(tdV);
 
@@ -1916,7 +1923,7 @@ function marRefreshSheet() {
     const tdP = document.createElement('td');
     tdP.className = 'xl-cell col-b' + (isSelected ? ' selected' : '');
     tdP.textContent = p.toFixed(2);
-    tdP.onclick = () => { marSheet.selected = i; marXlUpdateBar('mar', `B${i+1}`, p.toFixed(2)); marRefreshSheet(); };
+    tdP.onclick = () => { marSelectRow(i, 'mar', `B${i+1}`, p.toFixed(2)); };
     tdP.ondblclick = e => { e.stopPropagation(); marEditCell(tdP, 'pres', i); };
     tr.appendChild(tdP);
 
@@ -1925,7 +1932,7 @@ function marRefreshSheet() {
     tdC.className = 'xl-cell col-calc' + (isSelected ? ' selected' : '');
     tdC.textContent = calcVal;
     tdC.title = calcRaw;
-    tdC.onclick = () => { marSheet.selected = i; marXlUpdateBar('mar', `C${i+1}`, calcRaw || calcVal); marRefreshSheet(); };
+    tdC.onclick = () => { marSelectRow(i, 'mar', `C${i+1}`, calcRaw || calcVal); };
     tdC.ondblclick = e => { e.stopPropagation(); marEditCell(tdC, 'calc', i); };
     tr.appendChild(tdC);
 
@@ -1937,7 +1944,61 @@ function marXlUpdateBar(mod, ref, val) {
   const r = document.getElementById(`${mod}-xl-ref`);
   const f = document.getElementById(`${mod}-xl-fval`);
   if (r) r.textContent = ref;
-  if (f) f.textContent = val;
+  if (f) { f.value = val !== undefined ? val : ''; f._lastMod = mod; }
+}
+
+// ── Sélection sans rebuild DOM (préserve le dblclick) ──
+function marSelectRow(rowIdx, mod, ref, val) {
+  marSheet.selected = rowIdx;
+  marXlUpdateBar(mod, ref, val);
+  document.querySelectorAll('#mar-sheet-body tr').forEach((tr, i) => {
+    const sel = i === rowIdx;
+    tr.querySelectorAll('td').forEach((td, ci) => {
+      if (ci === 0) td.className = 'xl-row-num' + (sel ? ' row-selected' : '');
+      else td.classList.toggle('selected', sel);
+    });
+  });
+}
+function phSelectRow(rowIdx, ref, val) {
+  phSheet.selected = rowIdx;
+  marXlUpdateBar('ph', ref, val);
+  document.querySelectorAll('#ph-sheet-body tr').forEach((tr, i) => {
+    const sel = i === rowIdx;
+    tr.querySelectorAll('td').forEach((td, ci) => {
+      if (ci === 0) td.className = 'xl-row-num' + (sel ? ' row-selected' : '');
+      else td.classList.toggle('selected', sel);
+    });
+  });
+}
+function tempSelectRow(rowIdx, ref, val) {
+  tempSheet.selected = rowIdx;
+  marXlUpdateBar('temp', ref, val);
+  document.querySelectorAll('#temp-sheet-body tr').forEach((tr, i) => {
+    const sel = i === rowIdx;
+    tr.querySelectorAll('td').forEach((td, ci) => {
+      if (ci === 0) td.className = 'xl-row-num' + (sel ? ' row-selected' : '');
+      else td.classList.toggle('selected', sel);
+    });
+  });
+}
+// ── Commit depuis la barre de formule ──
+function marFormulaBarCommit() {
+  const i = marSheet.selected; if (i === null || i === undefined) return;
+  const raw = document.getElementById('mar-xl-fval').value.trim();
+  if (raw === '') delete marSheet.formulas[i]; else marSheet.formulas[i] = raw;
+  marRefreshSheet();
+}
+function phFormulaBarCommit() {
+  const i = phSheet.selected; if (i === null || i === undefined) return;
+  const raw = document.getElementById('ph-xl-fval').value.trim();
+  if (raw === '') delete phSheet.formulas[i]; else phSheet.formulas[i] = raw;
+  phRefreshSheet();
+}
+function tempFormulaBarCommit() {
+  const i = tempSheet.selected; if (i === null || i === undefined) return;
+  const raw = document.getElementById('temp-xl-fval').value.trim();
+  if (raw === '') delete tempSheet.formulas[i]; else tempSheet.formulas[i] = raw;
+  tempRefreshSheet();
 }
 
 function marEditCell(td, col, rowIdx) {
@@ -2260,21 +2321,21 @@ function phRefreshSheet() {
     const tdV = document.createElement('td');
     tdV.className = 'xl-cell col-a' + (isSelected ? ' selected' : '');
     tdV.textContent = v.toFixed(2);
-    tdV.onclick = () => { phSheet.selected = i; marXlUpdateBar('ph', `A${i+1}`, v.toFixed(2)); phRefreshSheet(); };
+    tdV.onclick = () => { phSelectRow(i, `A${i+1}`, v.toFixed(2)); };
     tdV.ondblclick = e => { e.stopPropagation(); phEditCell(tdV, 'vol', i); };
     tr.appendChild(tdV);
 
     const tdP = document.createElement('td');
     tdP.className = 'xl-cell col-b' + (isSelected ? ' selected' : '');
     tdP.textContent = ph.toFixed(2);
-    tdP.onclick = () => { phSheet.selected = i; marXlUpdateBar('ph', `B${i+1}`, ph.toFixed(2)); phRefreshSheet(); };
+    tdP.onclick = () => { phSelectRow(i, `B${i+1}`, ph.toFixed(2)); };
     tdP.ondblclick = e => { e.stopPropagation(); phEditCell(tdP, 'ph', i); };
     tr.appendChild(tdP);
 
     const tdC = document.createElement('td');
     tdC.className = 'xl-cell col-calc' + (isSelected ? ' selected' : '');
     tdC.textContent = calcVal; tdC.title = calcRaw;
-    tdC.onclick = () => { phSheet.selected = i; marXlUpdateBar('ph', `C${i+1}`, calcRaw || calcVal); phRefreshSheet(); };
+    tdC.onclick = () => { phSelectRow(i, `C${i+1}`, calcRaw || calcVal); };
     tdC.ondblclick = e => { e.stopPropagation(); phEditCell(tdC, 'calc', i); };
     tr.appendChild(tdC);
 
@@ -2397,28 +2458,28 @@ function tempRefreshSheet() {
     const tdT = document.createElement('td');
     tdT.className = 'xl-cell col-a' + (isSelected ? ' selected' : '');
     tdT.textContent = time.toFixed(2);
-    tdT.onclick = () => { tempSheet.selected = i; marXlUpdateBar('temp', `A${i+1}`, time.toFixed(2)); tempRefreshSheet(); };
+    tdT.onclick = () => { tempSelectRow(i, `A${i+1}`, time.toFixed(2)); };
     tdT.ondblclick = e => { e.stopPropagation(); tempEditCell(tdT, 'time', i); };
     tr.appendChild(tdT);
 
     const td1 = document.createElement('td');
     td1.className = 'xl-cell col-b' + (isSelected ? ' selected' : '');
     td1.textContent = t1.toFixed(2);
-    td1.onclick = () => { tempSheet.selected = i; marXlUpdateBar('temp', `B${i+1}`, t1.toFixed(2)); tempRefreshSheet(); };
+    td1.onclick = () => { tempSelectRow(i, `B${i+1}`, t1.toFixed(2)); };
     td1.ondblclick = e => { e.stopPropagation(); tempEditCell(td1, 't1', i); };
     tr.appendChild(td1);
 
     const td2 = document.createElement('td');
     td2.className = 'xl-cell col-c' + (isSelected ? ' selected' : '');
     td2.textContent = !isNaN(t2) ? t2.toFixed(2) : '—';
-    td2.onclick = () => { tempSheet.selected = i; marXlUpdateBar('temp', `C${i+1}`, !isNaN(t2)?t2.toFixed(2):''); tempRefreshSheet(); };
+    td2.onclick = () => { tempSelectRow(i, `C${i+1}`, !isNaN(t2)?t2.toFixed(2):''); };
     td2.ondblclick = e => { e.stopPropagation(); tempEditCell(td2, 't2', i); };
     tr.appendChild(td2);
 
     const tdC = document.createElement('td');
     tdC.className = 'xl-cell col-calc' + (isSelected ? ' selected' : '');
     tdC.textContent = calcVal; tdC.title = calcRaw;
-    tdC.onclick = () => { tempSheet.selected = i; marXlUpdateBar('temp', `D${i+1}`, calcRaw || calcVal); tempRefreshSheet(); };
+    tdC.onclick = () => { tempSelectRow(i, `D${i+1}`, calcRaw || calcVal); };
     tdC.ondblclick = e => { e.stopPropagation(); tempEditCell(tdC, 'calc', i); };
     tr.appendChild(tdC);
 
