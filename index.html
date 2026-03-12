@@ -812,6 +812,30 @@ table.data-table tr:last-child td { color: var(--green); }
 #page-oscilo .panel-right { order: 1; flex: 1; }
 #page-oscilo .panel-left  { order: 2; width: 600px; flex-shrink: 0; }
 canvas.knob-canvas { cursor: pointer; display: block; }
+/* Affichage digital */
+.digi-display {
+  flex: 1;
+  font-family: 'Courier New', 'Share Tech Mono', monospace;
+  font-size: 1.6rem;
+  font-weight: bold;
+  text-align: center;
+  letter-spacing: 3px;
+  color: #00ff88;
+  background: #050e05;
+  border: 1px solid #1a4a2a;
+  border-radius: 4px;
+  padding: 6px 10px;
+  text-shadow: 0 0 8px rgba(0,255,136,0.6), 0 0 20px rgba(0,255,136,0.2);
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+  user-select: none;
+}
+body.light .digi-display {
+  color: #006633;
+  background: #e8f5e8;
+  border-color: #4a8a5a;
+  text-shadow: none;
+  box-shadow: inset 0 0 6px rgba(0,0,0,0.1);
+}
 .module-card.oscilo::before { background: #7c4dff; }
 .module-card.oscilo h2 { color: #b39ddb; }
 .module-card.oscilo .launch-btn { background: #7c4dff; color: #fff; }
@@ -2670,6 +2694,8 @@ function osciloUpdateUeff() {
   document.getElementById('oscilo-umax-display').textContent = umax;
   document.getElementById('oscilo-m-ueff').textContent = OSCILO.ueff.toFixed(2)+' V';
   document.getElementById('oscilo-m-umax').textContent = umax+' V';
+  const dispU = document.getElementById('oscilo-ueff-display');
+  if (dispU) dispU.textContent = OSCILO.ueff.toFixed(2) + ' V';
   osciloUpdateMeasures();
   if(OSCILO.soundPlaying&&OSCILO.gainNode) OSCILO.gainNode.gain.value = OSCILO.ueff/15*0.4;
 }
@@ -2692,8 +2718,11 @@ function osciloChangeFreq(d){
 function osciloSetFreq(f){document.getElementById('oscilo-freq').value=f;osciloUpdateFreq();}
 function osciloUpdateMeasures(){
   const T=1/OSCILO.freq*1000;
-  document.getElementById('oscilo-m-freq').textContent = OSCILO.freq<1000?OSCILO.freq+' Hz':(OSCILO.freq/1000).toFixed(1)+' kHz';
+  const freqTxt = OSCILO.freq<1000 ? OSCILO.freq+' Hz' : (OSCILO.freq/1000).toFixed(1)+' kHz';
+  document.getElementById('oscilo-m-freq').textContent = freqTxt;
   document.getElementById('oscilo-m-period').textContent = T<1?(T*1000).toFixed(2)+' µs':T<1000?T.toFixed(2)+' ms':(T/1000).toFixed(2)+' s';
+  const dispF = document.getElementById('oscilo-freq-display');
+  if (dispF) dispF.textContent = freqTxt;
 }
 
 function osciloToggleSound(){OSCILO.soundPlaying?osciloStopSound():osciloStartSound();}
@@ -2744,13 +2773,12 @@ function osciloReset(){
     <div class="widget">
       <div class="widget-header">⚡ Tension efficace Ueff</div>
       <div class="widget-body">
-        <div style="display:flex;align-items:center;gap:8px">
-          <button class="btn btn-red" style="margin:0;padding:6px 14px;font-size:1.1rem" onclick="osciloChangeUeff(-0.1)">−</button>
-          <input type="number" id="oscilo-ueff" value="6.0" min="0" max="15" step="0.1"
-            style="flex:1;text-align:center;font-family:var(--mono);font-size:1.1rem;font-weight:bold"
-            oninput="osciloUpdateUeff()">
-          <button class="btn btn-green" style="margin:0;padding:6px 14px;font-size:1.1rem" onclick="osciloChangeUeff(0.1)">+</button>
+        <div style="display:flex;align-items:center;gap:10px">
+          <button class="btn btn-red" style="margin:0;padding:4px 12px;font-size:1rem;flex-shrink:0" onclick="osciloChangeUeff(-0.1)">−</button>
+          <div class="digi-display" id="oscilo-ueff-display">6.00 V</div>
+          <button class="btn btn-green" style="margin:0;padding:4px 12px;font-size:1rem;flex-shrink:0" onclick="osciloChangeUeff(0.1)">+</button>
         </div>
+        <input type="number" id="oscilo-ueff" value="6.0" min="0" max="15" step="0.1" style="display:none" oninput="osciloUpdateUeff()">
         <div id="oscilo-umax-display" style="display:none"></div>
       </div>
     </div>
@@ -2759,14 +2787,12 @@ function osciloReset(){
     <div class="widget">
       <div class="widget-header">〰️ Fréquence</div>
       <div class="widget-body">
-        <div style="display:flex;align-items:center;gap:8px">
-          <button class="btn btn-red" style="margin:0;padding:6px 14px;font-size:1.1rem" onclick="osciloChangeFreq(-10)">−</button>
-          <input type="number" id="oscilo-freq" value="50" min="1" max="20000" step="1"
-            style="flex:1;text-align:center;font-family:var(--mono);font-size:1.1rem;font-weight:bold"
-            oninput="osciloUpdateFreq()">
-          <button class="btn btn-green" style="margin:0;padding:6px 14px;font-size:1.1rem" onclick="osciloChangeFreq(10)">+</button>
+        <div style="display:flex;align-items:center;gap:10px">
+          <button class="btn btn-red" style="margin:0;padding:4px 12px;font-size:1rem;flex-shrink:0" onclick="osciloChangeFreq(-10)">−</button>
+          <div class="digi-display" id="oscilo-freq-display">50 Hz</div>
+          <button class="btn btn-green" style="margin:0;padding:4px 12px;font-size:1rem;flex-shrink:0" onclick="osciloChangeFreq(10)">+</button>
         </div>
-        <div style="text-align:center;font-family:var(--mono);font-size:0.7rem;color:var(--text-dim);margin-top:4px">Hz</div>
+        <input type="number" id="oscilo-freq" value="50" min="1" max="20000" step="1" style="display:none" oninput="osciloUpdateFreq()">
         <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
           <button class="btn" style="flex:1;margin:0;font-size:0.7rem;padding:4px;background:var(--bg3);color:var(--text)" onclick="osciloSetFreq(50)">50 Hz</button>
           <button class="btn" style="flex:1;margin:0;font-size:0.7rem;padding:4px;background:var(--bg3);color:var(--text)" onclick="osciloSetFreq(100)">100 Hz</button>
