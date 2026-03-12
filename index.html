@@ -807,6 +807,10 @@ table.data-table tr:last-child td { color: var(--green); }
 .oscilo-knob-col { display: flex; flex-direction: column; align-items: center; gap: 4px; }
 .oscilo-knob-label { font-family: var(--mono); font-size: 0.65rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; text-align: center; }
 .oscilo-knob-val { font-family: var(--mono); font-size: 0.75rem; font-weight: bold; text-align: center; padding: 3px 8px; background: var(--bg); border: 1px solid var(--border); border-radius: 2px; min-width: 80px; }
+/* Layout spécifique oscilloscope : écran à gauche, contrôles à droite + plus larges */
+#page-oscilo { display: flex; flex-direction: row; gap: 20px; align-items: flex-start; }
+#page-oscilo .panel-right { order: 1; flex: 1; }
+#page-oscilo .panel-left  { order: 2; width: 480px; flex-shrink: 0; }
 canvas.knob-canvas { cursor: pointer; display: block; }
 .module-card.oscilo::before { background: #7c4dff; }
 .module-card.oscilo h2 { color: #b39ddb; }
