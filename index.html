@@ -647,7 +647,7 @@ table.data-table tr:last-child td { color: var(--green); }
   padding: 4px 8px;
   border-right: 1px solid #2d3748;
   border-bottom: 1px solid #2d3748;
-  text-align: right;
+  text-align: center;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -674,7 +674,7 @@ table.data-table tr:last-child td { color: var(--green); }
   font-family: 'Segoe UI', Arial, sans-serif;
   font-size: 0.82rem;
   padding: 2px 6px;
-  text-align: right;
+  text-align: center;
   outline: none;
   box-sizing: border-box;
 }
@@ -987,9 +987,9 @@ canvas.knob-canvas { cursor: pointer; display: block; }
               </tr>
               <tr>
                 <th class="xl-corner" style="border-bottom:1px solid #4a5568"></th>
-                <th class="xl-col-head" style="font-size:0.65rem;color:#546e7a;font-weight:normal;background:#252f3e;border-bottom:1px solid #4a5568">Volume (mL)</th>
-                <th class="xl-col-head" style="font-size:0.65rem;color:#546e7a;font-weight:normal;background:#252f3e;border-bottom:1px solid #4a5568">pH</th>
-                <th class="xl-col-head" style="font-size:0.65rem;color:#546e7a;font-weight:normal;background:#252f3e;border-bottom:1px solid #4a5568">Calcul</th>
+                <th class="xl-col-head" style="font-size:0.65rem;color:var(--text-dim);font-weight:normal;background:var(--bg3);border-bottom:1px solid var(--border)">Volume (mL)</th>
+                <th class="xl-col-head" style="font-size:0.65rem;color:var(--text-dim);font-weight:normal;background:var(--bg3);border-bottom:1px solid var(--border)">pH</th>
+                <th class="xl-col-head" style="font-size:0.65rem;color:var(--text-dim);font-weight:normal;background:var(--bg3);border-bottom:1px solid var(--border)">Calcul</th>
               </tr>
             </thead>
             <tbody id="ph-sheet-body"></tbody>
@@ -1142,9 +1142,9 @@ canvas.knob-canvas { cursor: pointer; display: block; }
               </tr>
               <tr>
                 <th class="xl-corner" style="font-size:0.6rem;color:#546e7a;border-bottom:1px solid #4a5568"></th>
-                <th class="xl-col-head" style="font-size:0.65rem;color:#546e7a;font-weight:normal;background:#252f3e;border-bottom:1px solid #4a5568">Volume (cm³)</th>
-                <th class="xl-col-head" style="font-size:0.65rem;color:#546e7a;font-weight:normal;background:#252f3e;border-bottom:1px solid #4a5568">Pression (kPa)</th>
-                <th class="xl-col-head" style="font-size:0.65rem;color:#546e7a;font-weight:normal;background:#252f3e;border-bottom:1px solid #4a5568">Calcul</th>
+                <th class="xl-col-head" style="font-size:0.65rem;color:var(--text-dim);font-weight:normal;background:var(--bg3);border-bottom:1px solid var(--border)">Volume (cm³)</th>
+                <th class="xl-col-head" style="font-size:0.65rem;color:var(--text-dim);font-weight:normal;background:var(--bg3);border-bottom:1px solid var(--border)">Pression (kPa)</th>
+                <th class="xl-col-head" style="font-size:0.65rem;color:var(--text-dim);font-weight:normal;background:var(--bg3);border-bottom:1px solid var(--border)">Calcul</th>
               </tr>
             </thead>
             <tbody id="mar-sheet-body"></tbody>
@@ -1270,10 +1270,10 @@ canvas.knob-canvas { cursor: pointer; display: block; }
               </tr>
               <tr>
                 <th class="xl-corner" style="border-bottom:1px solid #4a5568"></th>
-                <th class="xl-col-head" style="font-size:0.65rem;color:#546e7a;font-weight:normal;background:#252f3e;border-bottom:1px solid #4a5568">Temps (min)</th>
-                <th class="xl-col-head" style="font-size:0.65rem;color:#546e7a;font-weight:normal;background:#252f3e;border-bottom:1px solid #4a5568">Sonde 1 (°C)</th>
-                <th class="xl-col-head" style="font-size:0.65rem;color:#546e7a;font-weight:normal;background:#252f3e;border-bottom:1px solid #4a5568">Sonde 2 (°C)</th>
-                <th class="xl-col-head" style="font-size:0.65rem;color:#546e7a;font-weight:normal;background:#252f3e;border-bottom:1px solid #4a5568">Calcul</th>
+                <th class="xl-col-head" style="font-size:0.65rem;color:var(--text-dim);font-weight:normal;background:var(--bg3);border-bottom:1px solid var(--border)">Temps (min)</th>
+                <th class="xl-col-head" style="font-size:0.65rem;color:var(--text-dim);font-weight:normal;background:var(--bg3);border-bottom:1px solid var(--border)">Sonde 1 (°C)</th>
+                <th class="xl-col-head" style="font-size:0.65rem;color:var(--text-dim);font-weight:normal;background:var(--bg3);border-bottom:1px solid var(--border)">Sonde 2 (°C)</th>
+                <th class="xl-col-head" style="font-size:0.65rem;color:var(--text-dim);font-weight:normal;background:var(--bg3);border-bottom:1px solid var(--border)">Calcul</th>
               </tr>
             </thead>
             <tbody id="temp-sheet-body"></tbody>
@@ -1908,7 +1908,7 @@ function marRefreshSheet() {
     const tdV = document.createElement('td');
     tdV.className = 'xl-cell col-a' + (isSelected ? ' selected' : '');
     tdV.textContent = v.toFixed(2);
-    tdV.onclick = () => { marSelectRow('mar', i, `A${i+1}`, v.toFixed(2)); };
+    tdV.onclick = () => { marSheet.selected = i; marXlUpdateBar('mar', `A${i+1}`, v.toFixed(2)); marRefreshSheet(); };
     tdV.ondblclick = e => { e.stopPropagation(); marEditCell(tdV, 'volume', i); };
     tr.appendChild(tdV);
 
@@ -1916,7 +1916,7 @@ function marRefreshSheet() {
     const tdP = document.createElement('td');
     tdP.className = 'xl-cell col-b' + (isSelected ? ' selected' : '');
     tdP.textContent = p.toFixed(2);
-    tdP.onclick = () => { marSelectRow('mar', i, `B${i+1}`, p.toFixed(2)); };
+    tdP.onclick = () => { marSheet.selected = i; marXlUpdateBar('mar', `B${i+1}`, p.toFixed(2)); marRefreshSheet(); };
     tdP.ondblclick = e => { e.stopPropagation(); marEditCell(tdP, 'pres', i); };
     tr.appendChild(tdP);
 
@@ -1925,7 +1925,7 @@ function marRefreshSheet() {
     tdC.className = 'xl-cell col-calc' + (isSelected ? ' selected' : '');
     tdC.textContent = calcVal;
     tdC.title = calcRaw;
-    tdC.onclick = () => { marSelectRow('mar', i, `C${i+1}`, calcRaw || calcVal); };
+    tdC.onclick = () => { marSheet.selected = i; marXlUpdateBar('mar', `C${i+1}`, calcRaw || calcVal); marRefreshSheet(); };
     tdC.ondblclick = e => { e.stopPropagation(); marEditCell(tdC, 'calc', i); };
     tr.appendChild(tdC);
 
@@ -1940,26 +1940,10 @@ function marXlUpdateBar(mod, ref, val) {
   if (f) f.textContent = val;
 }
 
-// Sélection de ligne sans reconstruire le DOM (permet le double-clic)
-function marSelectRow(mod, rowIdx, ref, val) {
-  marSheet.selected = rowIdx;
-  marXlUpdateBar(mod, ref, val);
-  // Mise à jour CSS uniquement
-  document.querySelectorAll('#mar-sheet-body tr').forEach((tr, i) => {
-    const cells = tr.querySelectorAll('td');
-    const isSelected = i === rowIdx;
-    if (cells[0]) cells[0].className = 'xl-row-num' + (isSelected ? ' row-selected' : '');
-    cells.forEach((td, ci) => {
-      if (ci === 0) return;
-      td.classList.toggle('selected', isSelected);
-    });
-  });
-}
-
 function marEditCell(td, col, rowIdx) {
   const input = document.createElement('input');
   input.type = 'text';
-  input.style.cssText = 'width:100%;height:100%;background:#fff;color:#000;border:2px solid #1976d2;font-family:Segoe UI,Arial,sans-serif;font-size:0.82rem;padding:2px 6px;text-align:right;outline:none;box-sizing:border-box';
+  input.style.cssText = 'width:100%;height:100%;background:#fff;color:#000;border:2px solid #1976d2;font-family:Segoe UI,Arial,sans-serif;font-size:0.82rem;padding:2px 6px;text-align:center;outline:none;box-sizing:border-box';
   td.classList.add('editing');
   let initVal = '';
   if (col === 'volume')    initVal = state.marVolumes[rowIdx].toFixed(1);
@@ -2276,21 +2260,21 @@ function phRefreshSheet() {
     const tdV = document.createElement('td');
     tdV.className = 'xl-cell col-a' + (isSelected ? ' selected' : '');
     tdV.textContent = v.toFixed(2);
-    tdV.onclick = () => { phSheet.selected = i; marXlUpdateBar('ph', `A${i+1}`, v.toFixed(2)); phSelectRow(i); };
+    tdV.onclick = () => { phSheet.selected = i; marXlUpdateBar('ph', `A${i+1}`, v.toFixed(2)); phRefreshSheet(); };
     tdV.ondblclick = e => { e.stopPropagation(); phEditCell(tdV, 'vol', i); };
     tr.appendChild(tdV);
 
     const tdP = document.createElement('td');
     tdP.className = 'xl-cell col-b' + (isSelected ? ' selected' : '');
     tdP.textContent = ph.toFixed(2);
-    tdP.onclick = () => { phSheet.selected = i; marXlUpdateBar('ph', `B${i+1}`, ph.toFixed(2)); phSelectRow(i); };
+    tdP.onclick = () => { phSheet.selected = i; marXlUpdateBar('ph', `B${i+1}`, ph.toFixed(2)); phRefreshSheet(); };
     tdP.ondblclick = e => { e.stopPropagation(); phEditCell(tdP, 'ph', i); };
     tr.appendChild(tdP);
 
     const tdC = document.createElement('td');
     tdC.className = 'xl-cell col-calc' + (isSelected ? ' selected' : '');
     tdC.textContent = calcVal; tdC.title = calcRaw;
-    tdC.onclick = () => { phSheet.selected = i; marXlUpdateBar('ph', `C${i+1}`, calcRaw || calcVal); phSelectRow(i); };
+    tdC.onclick = () => { phSheet.selected = i; marXlUpdateBar('ph', `C${i+1}`, calcRaw || calcVal); phRefreshSheet(); };
     tdC.ondblclick = e => { e.stopPropagation(); phEditCell(tdC, 'calc', i); };
     tr.appendChild(tdC);
 
@@ -2298,19 +2282,10 @@ function phRefreshSheet() {
   });
 }
 
-function phSelectRow(rowIdx) {
-  document.querySelectorAll('#ph-sheet-body tr').forEach((tr, i) => {
-    const cells = tr.querySelectorAll('td');
-    const isSelected = i === rowIdx;
-    if (cells[0]) cells[0].className = 'xl-row-num' + (isSelected ? ' row-selected' : '');
-    cells.forEach((td, ci) => { if (ci > 0) td.classList.toggle('selected', isSelected); });
-  });
-}
-
 function phEditCell(td, col, i) {
   const input = document.createElement('input');
   input.type = 'text';
-  input.style.cssText = 'width:100%;height:100%;background:#fff;color:#000;border:2px solid #1976d2;font-family:Segoe UI,Arial,sans-serif;font-size:0.82rem;padding:2px 6px;text-align:right;outline:none;box-sizing:border-box';
+  input.style.cssText = 'width:100%;height:100%;background:#fff;color:#000;border:2px solid #1976d2;font-family:Segoe UI,Arial,sans-serif;font-size:0.82rem;padding:2px 6px;text-align:center;outline:none;box-sizing:border-box';
   td.classList.add('editing');
   input.value = col === 'vol' ? state.phVolumes[i].toFixed(1)
               : col === 'ph'  ? state.phValues[i].toFixed(2)
@@ -2422,28 +2397,28 @@ function tempRefreshSheet() {
     const tdT = document.createElement('td');
     tdT.className = 'xl-cell col-a' + (isSelected ? ' selected' : '');
     tdT.textContent = time.toFixed(2);
-    tdT.onclick = () => { tempSheet.selected = i; marXlUpdateBar('temp', `A${i+1}`, time.toFixed(2)); tempSelectRow(i); };
+    tdT.onclick = () => { tempSheet.selected = i; marXlUpdateBar('temp', `A${i+1}`, time.toFixed(2)); tempRefreshSheet(); };
     tdT.ondblclick = e => { e.stopPropagation(); tempEditCell(tdT, 'time', i); };
     tr.appendChild(tdT);
 
     const td1 = document.createElement('td');
     td1.className = 'xl-cell col-b' + (isSelected ? ' selected' : '');
     td1.textContent = t1.toFixed(2);
-    td1.onclick = () => { tempSheet.selected = i; marXlUpdateBar('temp', `B${i+1}`, t1.toFixed(2)); tempSelectRow(i); };
+    td1.onclick = () => { tempSheet.selected = i; marXlUpdateBar('temp', `B${i+1}`, t1.toFixed(2)); tempRefreshSheet(); };
     td1.ondblclick = e => { e.stopPropagation(); tempEditCell(td1, 't1', i); };
     tr.appendChild(td1);
 
     const td2 = document.createElement('td');
     td2.className = 'xl-cell col-c' + (isSelected ? ' selected' : '');
     td2.textContent = !isNaN(t2) ? t2.toFixed(2) : '—';
-    td2.onclick = () => { tempSheet.selected = i; marXlUpdateBar('temp', `C${i+1}`, !isNaN(t2)?t2.toFixed(2):''); tempSelectRow(i); };
+    td2.onclick = () => { tempSheet.selected = i; marXlUpdateBar('temp', `C${i+1}`, !isNaN(t2)?t2.toFixed(2):''); tempRefreshSheet(); };
     td2.ondblclick = e => { e.stopPropagation(); tempEditCell(td2, 't2', i); };
     tr.appendChild(td2);
 
     const tdC = document.createElement('td');
     tdC.className = 'xl-cell col-calc' + (isSelected ? ' selected' : '');
     tdC.textContent = calcVal; tdC.title = calcRaw;
-    tdC.onclick = () => { tempSheet.selected = i; marXlUpdateBar('temp', `D${i+1}`, calcRaw || calcVal); tempSelectRow(i); };
+    tdC.onclick = () => { tempSheet.selected = i; marXlUpdateBar('temp', `D${i+1}`, calcRaw || calcVal); tempRefreshSheet(); };
     tdC.ondblclick = e => { e.stopPropagation(); tempEditCell(tdC, 'calc', i); };
     tr.appendChild(tdC);
 
@@ -2451,19 +2426,10 @@ function tempRefreshSheet() {
   });
 }
 
-function tempSelectRow(rowIdx) {
-  document.querySelectorAll('#temp-sheet-body tr').forEach((tr, i) => {
-    const cells = tr.querySelectorAll('td');
-    const isSelected = i === rowIdx;
-    if (cells[0]) cells[0].className = 'xl-row-num' + (isSelected ? ' row-selected' : '');
-    cells.forEach((td, ci) => { if (ci > 0) td.classList.toggle('selected', isSelected); });
-  });
-}
-
 function tempEditCell(td, col, i) {
   const input = document.createElement('input');
   input.type = 'text';
-  input.style.cssText = 'width:100%;height:100%;background:#fff;color:#000;border:2px solid #1976d2;font-family:Segoe UI,Arial,sans-serif;font-size:0.82rem;padding:2px 6px;text-align:right;outline:none;box-sizing:border-box';
+  input.style.cssText = 'width:100%;height:100%;background:#fff;color:#000;border:2px solid #1976d2;font-family:Segoe UI,Arial,sans-serif;font-size:0.82rem;padding:2px 6px;text-align:center;outline:none;box-sizing:border-box';
   td.classList.add('editing');
   const row = state.tempCsvRows[i];
   input.value = col==='time' ? parseFloat(row[0]).toFixed(2)
