@@ -2729,6 +2729,7 @@ function osciloToggleSound(){OSCILO.soundPlaying?osciloStopSound():osciloStartSo
 function osciloStartSound(){
   try{
     if(!OSCILO.audioCtx) OSCILO.audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+    OSCILO.audioCtx.resume();
     OSCILO.oscillator=OSCILO.audioCtx.createOscillator();
     OSCILO.gainNode=OSCILO.audioCtx.createGain();
     OSCILO.oscillator.type='sine';
