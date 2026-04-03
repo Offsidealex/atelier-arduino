@@ -112,5 +112,6 @@ Après modification, re-uploadez le fichier sur GitHub : la mise à jour est en 
 
 ## 📄 Licence
 
-Libre d'utilisation et de modification pour un usage pédagogique.  
-Lycée Denis Diderot — Belfort — 2026
+© 2025 Alexis RUIZ — Lycée Denis Diderot, Belfort
+
+Ce projet est sous licence [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/deed.fr) — utilisation non commerciale, sans modification, avec attribution obligatoire.
