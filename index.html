@@ -1425,6 +1425,33 @@ const chartDefaults = {
   }
 };
 
+// ── Plugin sous-graduations pH chart
+const phSubGridPlugin = {
+  id: 'phSubGrid',
+  beforeDraw(chart) {
+    const ctx = chart.ctx;
+    const xAxis = chart.scales.x;
+    const yAxis = chart.scales.y;
+    if (!xAxis || !yAxis) return;
+    ctx.save();
+    ctx.strokeStyle = 'rgba(84,110,122,0.25)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([3, 4]);
+    // Lignes verticales tous les 1 mL
+    const xMax = xAxis.max || 30;
+    for (let v = 0; v <= xMax; v++) {
+      const px = xAxis.getPixelForValue(v);
+      ctx.beginPath(); ctx.moveTo(px, yAxis.top); ctx.lineTo(px, yAxis.bottom); ctx.stroke();
+    }
+    // Lignes horizontales tous les 1 pH
+    for (let p = 0; p <= 14; p++) {
+      const py = yAxis.getPixelForValue(p);
+      ctx.beginPath(); ctx.moveTo(xAxis.left, py); ctx.lineTo(xAxis.right, py); ctx.stroke();
+    }
+    ctx.restore();
+  }
+};
+
 // ── pH chart
 const ctxPh = document.getElementById('ph-chart').getContext('2d');
 const phChart = new Chart(ctxPh, {
@@ -1449,7 +1476,8 @@ const phChart = new Chart(ctxPh, {
     },
     plugins: { legend: { labels: { color: '#90a4ae', font: { family: 'Share Tech Mono', size: 11 } } } },
     animation: false, responsive: true, maintainAspectRatio: false
-  }
+  },
+  plugins: [phSubGridPlugin]
 });
 
 // ── Mariotte chart 1
