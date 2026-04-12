@@ -949,7 +949,7 @@ body.light .digi-display {
           <button class="btn btn-green"  onclick="phSave()"        style="margin:0">💾 SAUVEGARDER CSV</button>
           <button class="btn btn-blue"   onclick="phImportCSV()"   style="margin:0">📂 IMPORTER CSV</button>
           <button class="btn btn-purple" onclick="phEquivalence()" style="margin:0">📐 POINT D'ÉQUIVALENCE</button>
-          <button class="btn btn-amber"  onclick="phDerivee()"     style="margin:0">📈 COURBE DÉRIVÉE</button>
+          <button class="btn btn-amber"  onclick="phDerivee()"     style="margin:0" id="ph-btn-derivee">📈 COURBE DÉRIVÉE</button>
         </div>
         <input type="file" id="ph-csv-input" accept=".csv" style="display:none" onchange="phLoadCSV(event)">
       </div>
@@ -1670,6 +1670,8 @@ function phNewDosage() {
   phChart.data.datasets[1].data = [];
   phChart.data.datasets[2].data = [];
   phChart.update();
+  const btnD = document.getElementById('ph-btn-derivee');
+  btnD.classList.remove('btn-green'); btnD.classList.add('btn-amber');
   document.getElementById('ph-table-body').innerHTML = '';
   document.getElementById('ph-vol-total').textContent = '0.0 mL';
   document.getElementById('ph-vol-input').value = '0.0';
@@ -1718,6 +1720,16 @@ function phLoadCSV(event) {
 }
 
 function phDerivee() {
+  const btn = document.getElementById('ph-btn-derivee');
+  if (phChart.data.datasets[2].data.length > 0) {
+    phChart.data.datasets[2].data = [];
+    phChart.update();
+    btn.classList.remove('btn-green');
+    btn.classList.add('btn-amber');
+    btn.style.background = '';
+    phLog('info', '📈 Courbe dpH/dV masquée');
+    return;
+  }
   if (state.phVolumes.length < 3) { alert('Pas assez de points (minimum 3) !'); return; }
   const V = state.phVolumes, P = state.phValues;
   const derivData = [];
@@ -1729,6 +1741,8 @@ function phDerivee() {
   }
   phChart.data.datasets[2].data = derivData;
   phChart.update();
+  btn.classList.remove('btn-amber');
+  btn.classList.add('btn-green');
   phLog('ok', `📈 Courbe dpH/dV tracée (${derivData.length} points) — max au point d'équivalence`);
 }
 
