@@ -1474,7 +1474,22 @@ const phChart = new Chart(ctxPh, {
       y: { min: 0, max: 14, title: { display: true, text: 'pH', color: '#90a4ae', font: { family: 'Share Tech Mono' } }, ticks: { color: '#546e7a', font: { family: 'Share Tech Mono', size: 10 } }, grid: { color: 'rgba(42,58,74,0.6)' } },
       y2: { position: 'right', title: { display: true, text: 'dpH/dV', color: '#ffab40', font: { family: 'Share Tech Mono' } }, ticks: { color: '#ffab40', font: { family: 'Share Tech Mono', size: 10 } }, grid: { drawOnChartArea: false } }
     },
-    plugins: { legend: { labels: { color: '#90a4ae', font: { family: 'Share Tech Mono', size: 11 } } } },
+    plugins: {
+      legend: { labels: { color: '#90a4ae', font: { family: 'Share Tech Mono', size: 11 } } },
+      tooltip: {
+        callbacks: {
+          title: () => '',
+          label: (ctx) => {
+            if (ctx.datasetIndex === 2) return `dpH/dV = ${ctx.parsed.y.toFixed(3)}`;
+            if (ctx.datasetIndex === 1) return `Équivalence`;
+            return [`pH = ${ctx.parsed.y.toFixed(2)}`, `V = ${ctx.parsed.x.toFixed(2)} mL`];
+          }
+        },
+        displayColors: false,
+        bodyFont: { family: 'Share Tech Mono', size: 13 },
+        padding: 10
+      }
+    },
     animation: false, responsive: true, maintainAspectRatio: false
   },
   plugins: [phSubGridPlugin]
