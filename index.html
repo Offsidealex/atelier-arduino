@@ -958,10 +958,12 @@ body.light .digi-display {
     <div class="widget">
       <div class="widget-header">🔬 Actions</div>
       <div class="widget-body">
-        <button class="btn btn-amber" onclick="phNewDosage()">🔄 NOUVEAU DOSAGE</button>
-        <button class="btn btn-green" onclick="phSave()">💾 SAUVEGARDER CSV</button>
-        <button class="btn btn-purple" onclick="phEquivalence()">📐 POINT D'ÉQUIVALENCE</button>
-        <button class="btn btn-amber"  onclick="phDerivee()">📈 COURBE DÉRIVÉE</button>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+          <button class="btn btn-amber"  onclick="phNewDosage()"   style="margin:0">🔄 NOUVEAU DOSAGE</button>
+          <button class="btn btn-green"  onclick="phSave()"        style="margin:0">💾 SAUVEGARDER CSV</button>
+          <button class="btn btn-purple" onclick="phEquivalence()" style="margin:0">📐 POINT D'ÉQUIVALENCE</button>
+          <button class="btn btn-amber"  onclick="phDerivee()"     style="margin:0">📈 COURBE DÉRIVÉE</button>
+        </div>
       </div>
     </div>
 
