@@ -961,6 +961,7 @@ body.light .digi-display {
         <button class="btn btn-amber" onclick="phNewDosage()">🔄 NOUVEAU DOSAGE</button>
         <button class="btn btn-green" onclick="phSave()">💾 SAUVEGARDER CSV</button>
         <button class="btn btn-purple" onclick="phEquivalence()">📐 POINT D'ÉQUIVALENCE</button>
+        <button class="btn btn-amber"  onclick="phDerivee()">📈 COURBE DÉRIVÉE</button>
       </div>
     </div>
 
@@ -1431,16 +1432,20 @@ const phChart = new Chart(ctxPh, {
   data: {
     datasets: [
       { label: 'pH = f(V)', data: [], borderColor: '#00e676', backgroundColor: 'rgba(0,230,118,0.08)',
-        pointBackgroundColor: '#00e676', pointRadius: 6, borderWidth: 2, tension: 0.2 },
+        pointBackgroundColor: '#00e676', pointRadius: 6, borderWidth: 2, tension: 0.2, yAxisID: 'y' },
       { label: 'Équivalence', data: [], borderColor: '#ff5252', backgroundColor: '#ff5252',
-        pointRadius: 12, pointStyle: 'star', showLine: false }
+        pointRadius: 12, pointStyle: 'star', showLine: false, yAxisID: 'y' },
+      { label: 'dpH/dV', data: [], borderColor: '#ffab40', backgroundColor: 'rgba(255,171,64,0.08)',
+        pointBackgroundColor: '#ffab40', pointRadius: 4, borderWidth: 2, tension: 0.3,
+        showLine: true, borderDash: [5,3], yAxisID: 'y2' }
     ]
   },
   options: {
     ...JSON.parse(JSON.stringify(chartDefaults)),
     scales: {
       x: { type: 'linear', min: 0, title: { display: true, text: 'Volume titrant (mL)', color: '#90a4ae', font: { family: 'Share Tech Mono' } }, ticks: { color: '#546e7a', font: { family: 'Share Tech Mono', size: 10 } }, grid: { color: 'rgba(42,58,74,0.6)' } },
-      y: { min: 0, max: 14, title: { display: true, text: 'pH', color: '#90a4ae', font: { family: 'Share Tech Mono' } }, ticks: { color: '#546e7a', font: { family: 'Share Tech Mono', size: 10 } }, grid: { color: 'rgba(42,58,74,0.6)' } }
+      y: { min: 0, max: 14, title: { display: true, text: 'pH', color: '#90a4ae', font: { family: 'Share Tech Mono' } }, ticks: { color: '#546e7a', font: { family: 'Share Tech Mono', size: 10 } }, grid: { color: 'rgba(42,58,74,0.6)' } },
+      y2: { position: 'right', title: { display: true, text: 'dpH/dV', color: '#ffab40', font: { family: 'Share Tech Mono' } }, ticks: { color: '#ffab40', font: { family: 'Share Tech Mono', size: 10 } }, grid: { drawOnChartArea: false } }
     },
     plugins: { legend: { labels: { color: '#90a4ae', font: { family: 'Share Tech Mono', size: 11 } } } },
     animation: false, responsive: true, maintainAspectRatio: false
@@ -1663,6 +1668,7 @@ function phNewDosage() {
   state.phVolumes = []; state.phValues = [];
   phChart.data.datasets[0].data = [];
   phChart.data.datasets[1].data = [];
+  phChart.data.datasets[2].data = [];
   phChart.update();
   document.getElementById('ph-table-body').innerHTML = '';
   document.getElementById('ph-vol-total').textContent = '0.0 mL';
@@ -1676,6 +1682,21 @@ function phSave() {
   state.phVolumes.forEach((v, i) => { csv += `${v.toFixed(2)};${state.phValues[i].toFixed(2)}\n`; });
   downloadFile(csv, `dosage_${timestamp()}.csv`, 'text/csv');
   phLog('ok', '💾 Fichier CSV téléchargé');
+}
+
+function phDerivee() {
+  if (state.phVolumes.length < 3) { alert('Pas assez de points (minimum 3) !'); return; }
+  const V = state.phVolumes, P = state.phValues;
+  const derivData = [];
+  for (let i = 0; i < V.length - 1; i++) {
+    const dv = V[i+1] - V[i];
+    if (dv > 0) {
+      derivData.push({ x: (V[i] + V[i+1]) / 2, y: Math.abs((P[i+1] - P[i]) / dv) });
+    }
+  }
+  phChart.data.datasets[2].data = derivData;
+  phChart.update();
+  phLog('ok', `📈 Courbe dpH/dV tracée (${derivData.length} points) — max au point d'équivalence`);
 }
 
 function phEquivalence() {
