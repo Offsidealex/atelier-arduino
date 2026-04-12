@@ -1003,6 +1003,7 @@ body.light .digi-display {
           <input class="xl-formulaval" id="ph-xl-fval" placeholder="Sélectionnez une cellule..." onkeydown="if(event.key==='Enter')phFormulaBarCommit()" onblur="phFormulaBarCommit()">
         </div>
         <div style="display:flex;gap:6px;background:var(--bg2);border-bottom:1px solid var(--border);padding:4px 6px">
+          <button class="btn btn-green" onclick="phAddRow()"   style="margin:0;padding:4px 12px;font-size:0.72rem">+ Ajouter ligne</button>
           <button class="btn btn-red"  onclick="phDeleteRow()" style="margin:0;padding:4px 12px;font-size:0.72rem">🗑 Supprimer ligne</button>
           <button class="btn btn-blue" onclick="phFillDown()"  style="margin:0;padding:4px 12px;font-size:0.72rem">⬇ Remplir ↓</button>
           <span style="font-family:var(--mono);font-size:0.68rem;color:#546e7a;align-self:center;margin-left:8px">
@@ -1157,6 +1158,7 @@ body.light .digi-display {
         </div>
         <!-- Boutons -->
         <div style="display:flex;gap:6px;background:var(--bg2);border-bottom:1px solid var(--border);padding:4px 6px">
+          <button class="btn btn-green" onclick="marAddRow()"   style="margin:0;padding:4px 12px;font-size:0.72rem">+ Ajouter ligne</button>
           <button class="btn btn-red"  onclick="marDeleteRow()" style="margin:0;padding:4px 12px;font-size:0.72rem">🗑 Supprimer ligne</button>
           <button class="btn btn-blue" onclick="marFillDown()"  style="margin:0;padding:4px 12px;font-size:0.72rem">⬇ Remplir ↓</button>
           <span style="font-family:var(--mono);font-size:0.68rem;color:#546e7a;align-self:center;margin-left:8px">
@@ -2041,6 +2043,14 @@ function marFillDown() {
   marLog('ok', `Formule "${base}" appliquée à ${state.marVolumes.length} lignes`);
 }
 
+function marAddRow() {
+  state.marVolumes.push(0);
+  state.marPressions.push(0);
+  marSheet.selected = state.marVolumes.length - 1;
+  marUpdateCharts(); marUpdateStats(); marRefreshSheet(); marUpdateQuickButtons();
+  marLog('info', 'Nouvelle ligne ajoutée — double-clic pour saisir les valeurs');
+}
+
 function marDeleteRow() {
   if (marSheet.selected === null) { alert('Cliquez d\'abord sur une ligne pour la sélectionner.'); return; }
   const i = marSheet.selected;
@@ -2359,6 +2369,16 @@ function phFillDown() {
   if (!(0 in phSheet.formulas)) { alert('Entrez d\'abord une formule dans la ligne 1.\nEx : =A1*B1'); return; }
   const base = phSheet.formulas[0];
   state.phVolumes.forEach((_, i) => { phSheet.formulas[i] = base.replace(/([ABab])(\d+)/g, (_, c) => `${c}${i+1}`); });
+  phRefreshSheet();
+}
+
+function phAddRow() {
+  state.phVolumes.push(0);
+  state.phValues.push(7);
+  phSheet.selected = state.phVolumes.length - 1;
+  phChart.data.datasets[0].data = state.phVolumes.map((v,i)=>({x:v,y:state.phValues[i]})); phChart.update();
+  const tb2 = document.getElementById('ph-table-body'); tb2.innerHTML = '';
+  state.phVolumes.forEach((v,i) => { const tr=document.createElement('tr'); tr.innerHTML=`<td>${i+1}</td><td>${v.toFixed(2)}</td><td>${state.phValues[i].toFixed(2)}</td>`; tb2.appendChild(tr); });
   phRefreshSheet();
 }
 
