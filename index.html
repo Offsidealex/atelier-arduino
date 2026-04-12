@@ -1420,8 +1420,8 @@ const chartDefaults = {
   maintainAspectRatio: false,
   plugins: { legend: { labels: { color: '#90a4ae', font: { family: 'Share Tech Mono', size: 11 } } } },
   scales: {
-    x: { ticks: { color: '#546e7a', font: { family: 'Share Tech Mono', size: 10 } }, grid: { color: 'rgba(42,58,74,0.6)' } },
-    y: { ticks: { color: '#546e7a', font: { family: 'Share Tech Mono', size: 10 } }, grid: { color: 'rgba(42,58,74,0.6)' } }
+    x: { ticks: { color: '#546e7a', font: { family: 'Share Tech Mono', size: 10 } }, grid: { color: 'rgba(100,130,150,0.5)' } },
+    y: { ticks: { color: '#546e7a', font: { family: 'Share Tech Mono', size: 10 } }, grid: { color: 'rgba(100,130,150,0.5)' } }
   }
 };
 
@@ -1434,7 +1434,7 @@ const phSubGridPlugin = {
     const yAxis = chart.scales.y;
     if (!xAxis || !yAxis) return;
     ctx.save();
-    ctx.strokeStyle = 'rgba(84,110,122,0.25)';
+    ctx.strokeStyle = 'rgba(100,130,150,0.3)';
     ctx.lineWidth = 1;
     ctx.setLineDash([3, 4]);
     // Lignes verticales tous les 1 mL
@@ -1470,8 +1470,8 @@ const phChart = new Chart(ctxPh, {
   options: {
     ...JSON.parse(JSON.stringify(chartDefaults)),
     scales: {
-      x: { type: 'linear', min: 0, title: { display: true, text: 'Volume titrant (mL)', color: '#90a4ae', font: { family: 'Share Tech Mono' } }, ticks: { color: '#546e7a', font: { family: 'Share Tech Mono', size: 10 } }, grid: { color: 'rgba(42,58,74,0.6)' } },
-      y: { min: 0, max: 14, title: { display: true, text: 'pH', color: '#90a4ae', font: { family: 'Share Tech Mono' } }, ticks: { color: '#546e7a', font: { family: 'Share Tech Mono', size: 10 } }, grid: { color: 'rgba(42,58,74,0.6)' } },
+      x: { type: 'linear', min: 0, title: { display: true, text: 'Volume titrant (mL)', color: '#90a4ae', font: { family: 'Share Tech Mono' } }, ticks: { color: '#546e7a', font: { family: 'Share Tech Mono', size: 10 } }, grid: { color: 'rgba(100,130,150,0.5)' } },
+      y: { min: 0, max: 14, title: { display: true, text: 'pH', color: '#90a4ae', font: { family: 'Share Tech Mono' } }, ticks: { color: '#546e7a', font: { family: 'Share Tech Mono', size: 10 } }, grid: { color: 'rgba(100,130,150,0.5)' } },
       y2: { position: 'right', title: { display: true, text: 'dpH/dV', color: '#ffab40', font: { family: 'Share Tech Mono' } }, ticks: { color: '#ffab40', font: { family: 'Share Tech Mono', size: 10 } }, grid: { drawOnChartArea: false } }
     },
     plugins: {
@@ -1509,8 +1509,8 @@ const marChart1 = new Chart(ctxMar1, {
   options: {
     responsive: true, maintainAspectRatio: false, animation: false,
     scales: {
-      x: { min: 0, max: 65, title: { display: true, text: 'Volume V (cm³)', color: '#90a4ae', font: { family: 'Share Tech Mono' } }, ticks: { color: '#546e7a', font: { family: 'Share Tech Mono', size: 10 } }, grid: { color: 'rgba(42,58,74,0.6)' } },
-      y: { title: { display: true, text: 'Pression P (kPa)', color: '#90a4ae', font: { family: 'Share Tech Mono' } }, ticks: { color: '#546e7a', font: { family: 'Share Tech Mono', size: 10 } }, grid: { color: 'rgba(42,58,74,0.6)' } }
+      x: { min: 0, max: 65, title: { display: true, text: 'Volume V (cm³)', color: '#90a4ae', font: { family: 'Share Tech Mono' } }, ticks: { color: '#546e7a', font: { family: 'Share Tech Mono', size: 10 } }, grid: { color: 'rgba(100,130,150,0.5)' } },
+      y: { title: { display: true, text: 'Pression P (kPa)', color: '#90a4ae', font: { family: 'Share Tech Mono' } }, ticks: { color: '#546e7a', font: { family: 'Share Tech Mono', size: 10 } }, grid: { color: 'rgba(100,130,150,0.5)' } }
     },
     plugins: { legend: { labels: { color: '#90a4ae', font: { family: 'Share Tech Mono', size: 11 } } } }
   }
@@ -1530,8 +1530,8 @@ const marChart2 = new Chart(ctxMar2, {
   options: {
     responsive: true, maintainAspectRatio: false, animation: false,
     scales: {
-      x: { min: 0, title: { display: true, text: '1/V (cm⁻³)', color: '#90a4ae', font: { family: 'Share Tech Mono' } }, ticks: { color: '#546e7a', font: { family: 'Share Tech Mono', size: 10 } }, grid: { color: 'rgba(42,58,74,0.6)' } },
-      y: { title: { display: true, text: 'Pression P (kPa)', color: '#90a4ae', font: { family: 'Share Tech Mono' } }, ticks: { color: '#546e7a', font: { family: 'Share Tech Mono', size: 10 } }, grid: { color: 'rgba(42,58,74,0.6)' } }
+      x: { min: 0, title: { display: true, text: '1/V (cm⁻³)', color: '#90a4ae', font: { family: 'Share Tech Mono' } }, ticks: { color: '#546e7a', font: { family: 'Share Tech Mono', size: 10 } }, grid: { color: 'rgba(100,130,150,0.5)' } },
+      y: { title: { display: true, text: 'Pression P (kPa)', color: '#90a4ae', font: { family: 'Share Tech Mono' } }, ticks: { color: '#546e7a', font: { family: 'Share Tech Mono', size: 10 } }, grid: { color: 'rgba(100,130,150,0.5)' } }
     },
     plugins: { legend: { labels: { color: '#90a4ae', font: { family: 'Share Tech Mono', size: 11 } } } }
   }
@@ -1552,8 +1552,8 @@ const tempChart = new Chart(ctxTemp, {
   options: {
     ...JSON.parse(JSON.stringify(chartDefaults)),
     scales: {
-      x: { type: 'linear', title: { display: true, text: 'Temps (min)', color: '#90a4ae', font: { family: 'Share Tech Mono' } }, ticks: { color: '#546e7a', font: { family: 'Share Tech Mono', size: 10 } }, grid: { color: 'rgba(42,58,74,0.6)' } },
-      y: { title: { display: true, text: 'Température (°C)', color: '#90a4ae', font: { family: 'Share Tech Mono' } }, ticks: { color: '#546e7a', font: { family: 'Share Tech Mono', size: 10 } }, grid: { color: 'rgba(42,58,74,0.6)' } }
+      x: { type: 'linear', title: { display: true, text: 'Temps (min)', color: '#90a4ae', font: { family: 'Share Tech Mono' } }, ticks: { color: '#546e7a', font: { family: 'Share Tech Mono', size: 10 } }, grid: { color: 'rgba(100,130,150,0.5)' } },
+      y: { title: { display: true, text: 'Température (°C)', color: '#90a4ae', font: { family: 'Share Tech Mono' } }, ticks: { color: '#546e7a', font: { family: 'Share Tech Mono', size: 10 } }, grid: { color: 'rgba(100,130,150,0.5)' } }
     },
     plugins: { legend: { labels: { color: '#90a4ae', font: { family: 'Share Tech Mono', size: 11 } } } },
     animation: false, responsive: true, maintainAspectRatio: false
