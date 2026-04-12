@@ -945,11 +945,13 @@ body.light .digi-display {
       <div class="widget-header">🔬 Actions</div>
       <div class="widget-body">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
-          <button class="btn btn-amber"  onclick="phNewDosage()"   style="margin:0">🔄 NOUVEAU DOSAGE</button>
+          <button class="btn btn-amber"  onclick="phNewDosage()"   style="margin:0;grid-column:1/-1">🔄 NOUVEAU DOSAGE</button>
           <button class="btn btn-green"  onclick="phSave()"        style="margin:0">💾 SAUVEGARDER CSV</button>
+          <button class="btn btn-blue"   onclick="phImportCSV()"   style="margin:0">📂 IMPORTER CSV</button>
           <button class="btn btn-purple" onclick="phEquivalence()" style="margin:0">📐 POINT D'ÉQUIVALENCE</button>
           <button class="btn btn-amber"  onclick="phDerivee()"     style="margin:0">📈 COURBE DÉRIVÉE</button>
         </div>
+        <input type="file" id="ph-csv-input" accept=".csv" style="display:none" onchange="phLoadCSV(event)">
       </div>
     </div>
 
@@ -1680,6 +1682,39 @@ function phSave() {
   state.phVolumes.forEach((v, i) => { csv += `${v.toFixed(2)};${state.phValues[i].toFixed(2)}\n`; });
   downloadFile(csv, `dosage_${timestamp()}.csv`, 'text/csv');
   phLog('ok', '💾 Fichier CSV téléchargé');
+}
+
+function phImportCSV() {
+  document.getElementById('ph-csv-input').click();
+}
+
+function phLoadCSV(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const lines = e.target.result.trim().split('\n');
+    const vols = [], vals = [];
+    lines.forEach(line => {
+      const parts = line.replace(/\r/,'').split(/[;,]/);
+      if (parts.length < 2) return;
+      const v = parseFloat(parts[0].replace(',','.'));
+      const p = parseFloat(parts[1].replace(',','.'));
+      if (!isNaN(v) && !isNaN(p)) { vols.push(v); vals.push(p); }
+    });
+    if (vols.length === 0) { alert('Aucune donnée valide trouvée dans le fichier.'); return; }
+    state.phVolumes = vols; state.phValues = vals;
+    phChart.data.datasets[0].data = vols.map((v,i) => ({x:v, y:vals[i]}));
+    phChart.data.datasets[1].data = [];
+    phChart.data.datasets[2].data = [];
+    phChart.update();
+    const tb = document.getElementById('ph-table-body'); tb.innerHTML = '';
+    vols.forEach((v,i) => { const tr=document.createElement('tr'); tr.innerHTML=`<td>${i+1}</td><td>${v.toFixed(2)}</td><td>${vals[i].toFixed(2)}</td>`; tb.appendChild(tr); });
+    phRefreshSheet();
+    phLog('ok', `📂 CSV importé : ${vols.length} points chargés`);
+    event.target.value = '';
+  };
+  reader.readAsText(file);
 }
 
 function phDerivee() {
