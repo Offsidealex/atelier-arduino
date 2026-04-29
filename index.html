@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Atelier Arduino — Lycée Denis Diderot</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
@@ -929,8 +931,12 @@ body.light .digi-display {
       <div class="widget-header">💧 Volume Titrant</div>
       <div class="widget-body">
         <div class="field-group">
-          <label class="field-label">Volume total burette (mL)</label>
-          <input type="number" id="ph-vol-input" value="0.0" min="0" step="0.5">
+          <label class="field-label">Volume max burette (mL) <span style="color:var(--text-dim);font-size:0.7rem">(0 = auto)</span></label>
+          <input type="number" id="ph-vol-max" value="0" min="0" step="1" onchange="phUpdateXAxis()">
+        </div>
+        <div class="field-group">
+          <label class="field-label">Volume titrant actuel (mL)</label>
+          <input type="number" id="ph-vol-input" value="0.0" min="0" step="0.5" oninput="phUpdatePreview()">
         </div>
         <button class="btn btn-solid-green" id="ph-add-btn" onclick="phAddPoint()" disabled>➕ AJOUTER POINT</button>
         <div style="text-align:center;margin-top:8px">
@@ -992,6 +998,9 @@ body.light .digi-display {
     <div id="ph-panel-graph">
       <div class="chart-container" style="height:600px">
         <canvas id="ph-chart"></canvas>
+      </div>
+      <div style="display:flex;gap:8px;padding:6px 0;justify-content:flex-end">
+        <button class="btn btn-blue" onclick="phResetZoom()" style="margin:0;padding:4px 14px;font-size:0.72rem">🔍 RESET ZOOM</button>
       </div>
     </div>
 
@@ -1464,7 +1473,10 @@ const phChart = new Chart(ctxPh, {
         pointRadius: 12, pointStyle: 'star', showLine: false, yAxisID: 'y' },
       { label: 'dpH/dV', data: [], borderColor: '#ffab40', backgroundColor: 'rgba(255,171,64,0.08)',
         pointBackgroundColor: '#ffab40', pointRadius: 4, borderWidth: 2, tension: 0.3,
-        showLine: true, borderDash: [5,3], yAxisID: 'y2' }
+        showLine: true, borderDash: [5,3], yAxisID: 'y2' },
+      { label: 'Position actuelle', data: [], borderColor: '#ffffff', backgroundColor: '#ffffff',
+        pointRadius: 10, pointStyle: 'crossRot', pointBorderWidth: 3, showLine: false, yAxisID: 'y',
+        tooltip: { enabled: false } }
     ]
   },
   options: {
@@ -1480,6 +1492,7 @@ const phChart = new Chart(ctxPh, {
         callbacks: {
           title: () => '',
           label: (ctx) => {
+            if (ctx.datasetIndex === 3) return '';
             if (ctx.datasetIndex === 2) return `dpH/dV = ${ctx.parsed.y.toFixed(3)}`;
             if (ctx.datasetIndex === 1) return `Équivalence`;
             return [`pH = ${ctx.parsed.y.toFixed(2)}`, `V = ${ctx.parsed.x.toFixed(2)} mL`];
@@ -1488,12 +1501,39 @@ const phChart = new Chart(ctxPh, {
         displayColors: false,
         bodyFont: { family: 'Share Tech Mono', size: 13 },
         padding: 10
+      },
+      zoom: {
+        zoom: {
+          wheel: { enabled: true },
+          pinch: { enabled: true },
+          mode: 'xy',
+          scaleMode: 'xy',
+        },
+        pan: {
+          enabled: true,
+          mode: 'xy',
+        },
+        limits: {
+          y: { min: 0, max: 14 }
+        }
       }
     },
     animation: false, responsive: true, maintainAspectRatio: false
   },
   plugins: [phSubGridPlugin]
 });
+
+// ── Clignotement du point preview pH
+let _phBlinkOn = true;
+setInterval(() => {
+  _phBlinkOn = !_phBlinkOn;
+  const ds = phChart.data.datasets[3];
+  if (ds.data.length > 0) {
+    ds.pointRadius = _phBlinkOn ? 10 : 0;
+    ds.pointBorderWidth = _phBlinkOn ? 3 : 0;
+    phChart.update('none');
+  }
+}, 500);
 
 // ── Mariotte chart 1
 const ctxMar1 = document.getElementById('mar-chart1').getContext('2d');
@@ -1670,13 +1710,44 @@ function updatePhDisplay() {
   el.textContent = ph.toFixed(2);
   el.className = 'big-val ph-color';
   document.getElementById('volt-display').textContent = `Tension : ${state.currentVoltage.toFixed(0)} mV`;
-  // Couleur selon pH
   const colors = ph < 4 ? '#ff5252' : ph < 6 ? '#ffab40' : ph < 8 ? '#00e676' : ph < 10 ? '#40c4ff' : '#ce93d8';
   el.style.color = colors;
   el.style.textShadow = `0 0 12px ${colors}66`;
-  // Calib live
   document.getElementById('calib-live').textContent = `${state.currentVoltage.toFixed(0)} mV`;
   document.getElementById('calib-live2').textContent = `${state.currentVoltage.toFixed(0)} mV`;
+  phUpdatePreview();
+}
+
+function phUpdatePreview() {
+  if (!state.connected || !state.phCalib.done) {
+    phChart.data.datasets[3].data = [];
+    phChart.update('none');
+    return;
+  }
+  const vol = parseFloat(document.getElementById('ph-vol-input').value);
+  if (!isNaN(vol)) {
+    phChart.data.datasets[3].data = [{ x: vol, y: state.currentPh }];
+    phChart.update('none');
+  }
+}
+
+function phUpdateXAxis() {
+  const volMax = parseFloat(document.getElementById('ph-vol-max').value) || 0;
+  if (volMax > 0) {
+    phChart.options.scales.x.min = 0;
+    phChart.options.scales.x.max = volMax;
+    phChart.options.plugins.zoom.limits = { x: { min: 0, max: volMax }, y: { min: 0, max: 14 } };
+  } else {
+    delete phChart.options.scales.x.min;
+    delete phChart.options.scales.x.max;
+    phChart.options.plugins.zoom.limits = { y: { min: 0, max: 14 } };
+  }
+  phChart.resetZoom();
+}
+
+function phResetZoom() {
+  phChart.resetZoom();
+  phUpdateXAxis();
 }
 
 function phAddPoint() {
@@ -1712,6 +1783,7 @@ function phNewDosage() {
   phChart.data.datasets[0].data = [];
   phChart.data.datasets[1].data = [];
   phChart.data.datasets[2].data = [];
+  phChart.data.datasets[3].data = [];
   phChart.update();
   const btnD = document.getElementById('ph-btn-derivee');
   btnD.classList.remove('btn-green'); btnD.classList.add('btn-amber');
@@ -2410,10 +2482,12 @@ function phRefreshSheet() {
     const calcVal = calcRaw ? phEvalFormula(calcRaw, i) : '';
     const isSelected = phSheet.selected === i;
     const tr = document.createElement('tr');
+    tr.style.cursor = 'pointer';
 
     const tdN = document.createElement('td');
     tdN.className = 'xl-row-num' + (isSelected ? ' row-selected' : '');
     tdN.textContent = i + 1;
+    tdN.onclick = () => { phSelectRow(i, `A${i+1}`, v.toFixed(2)); };
     tr.appendChild(tdN);
 
     const tdV = document.createElement('td');
@@ -2494,8 +2568,9 @@ function phAddRow() {
 }
 
 function phDeleteRow() {
-  if (phSheet.selected === null) { alert('Cliquez d\'abord sur une ligne.'); return; }
+  if (phSheet.selected === null) { alert('Cliquez d\'abord sur une ligne à supprimer.'); return; }
   const i = phSheet.selected;
+  if (!confirm(`Supprimer la ligne ${i + 1} (V = ${state.phVolumes[i].toFixed(2)} mL, pH = ${state.phValues[i].toFixed(2)}) ?`)) return;
   state.phVolumes.splice(i, 1); state.phValues.splice(i, 1);
   const newF = {};
   Object.entries(phSheet.formulas).forEach(([k, v]) => { const ki=parseInt(k); if(ki<i) newF[ki]=v; else if(ki>i) newF[ki-1]=v; });
