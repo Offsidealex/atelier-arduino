@@ -1530,7 +1530,7 @@ setInterval(() => {
   const vol = parseFloat(document.getElementById('ph-vol-input').value);
   const ph  = state.currentPh;
   const ds  = phChart.data.datasets[3];
-  if (!isNaN(vol) && ph > 0) {
+  if (!isNaN(vol)) {
     ds.data = [{ x: vol, y: ph }];
     ds.pointRadius      = _phBlinkOn ? 10 : 0;
     ds.pointBorderWidth = _phBlinkOn ? 3  : 0;
