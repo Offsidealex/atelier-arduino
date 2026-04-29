@@ -932,7 +932,7 @@ body.light .digi-display {
       <div class="widget-body">
         <div class="field-group">
           <label class="field-label">Volume max burette (mL) <span style="color:var(--text-dim);font-size:0.7rem">(0 = auto)</span></label>
-          <input type="number" id="ph-vol-max" value="0" min="0" step="1" onchange="phUpdateXAxis()">
+          <input type="number" id="ph-vol-max" value="0" min="0" step="1" onchange="phUpdateXAxis()" onkeydown="if(event.key==='Enter')phUpdateXAxis()">
         </div>
         <div class="field-group">
           <label class="field-label">Volume titrant actuel (mL)</label>
@@ -1528,7 +1528,7 @@ let _phBlinkOn = true;
 setInterval(() => {
   _phBlinkOn = !_phBlinkOn;
   const vol = parseFloat(document.getElementById('ph-vol-input').value);
-  const ph  = state.currentPh;
+  const ph  = state.currentPh || 7;
   const ds  = phChart.data.datasets[3];
   if (!isNaN(vol)) {
     ds.data = [{ x: vol, y: ph }];
