@@ -1149,7 +1149,7 @@ function phLoadCSV(event) {
     const lines = e.target.result.trim().split('\n');
     const vols = [], vals = [];
     lines.forEach(line => { const parts = line.replace(/\r/,'').split(/[;,]/); if (parts.length < 2) return; const v = parseFloat(parts[0].replace(',','.')); const p = parseFloat(parts[1].replace(',','.')); if (!isNaN(v) && !isNaN(p)) { vols.push(v); vals.push(p); } });
-    if (vols.length === 0) { alert('Aucune donnée valide trouvée dans le fichier.'); return; }
+    if (vols.length === 0) { alert('Aucune donnée valide trouvée.\nVérifiez le format : deux colonnes numériques séparées par ; ou ,\n(Les lignes d\'en-tête sont ignorées automatiquement.)'); return; }
     state.phVolumes = vols; state.phValues = vals;
     phChart.data.datasets[0].data = vols.map((v,i) => ({x:v, y:vals[i]}));
     phChart.data.datasets[1].data = []; phChart.data.datasets[2].data = []; phChart.update();
@@ -1253,43 +1253,55 @@ function marAddPoint() {
 function marUpdateCharts() {
   const V = state.marVolumes, P = state.marPressions;
   marChart1.data.datasets[0].data = V.map((v, i) => ({ x: v, y: P[i] })); marChart1.update();
-  marChart2.data.datasets[0].data = V.map((v, i) => ({ x: 1/v, y: P[i] })); marChart2.update();
+  // Filtre les volumes nuls pour éviter 1/0 = Infinity
+  const validPairs = V.map((v, i) => ({ v, p: P[i] })).filter(d => d.v > 0);
+  marChart2.data.datasets[0].data = validPairs.map(d => ({ x: 1/d.v, y: d.p })); marChart2.update();
 }
 function marUpdateStats() {
   const V = state.marVolumes, P = state.marPressions;
   document.getElementById('mar-n').textContent = V.length;
   if (V.length === 0) { document.getElementById('mar-pv').textContent = '--- kPa·cm³'; document.getElementById('mar-r2').textContent = '---'; return; }
-  const pvVals = V.map((v, i) => v * P[i]);
+  // Filtre les volumes nuls pour éviter division par zéro
+  const valid = V.map((v, i) => ({ v, p: P[i] })).filter(d => d.v > 0);
+  if (valid.length === 0) { document.getElementById('mar-pv').textContent = '--- kPa·cm³'; document.getElementById('mar-r2').textContent = '---'; return; }
+  const pvVals = valid.map(d => d.v * d.p);
   const pvMoy  = pvVals.reduce((a, b) => a+b, 0) / pvVals.length;
   document.getElementById('mar-pv').textContent = pvMoy.toFixed(1) + ' kPa·cm³';
-  if (V.length >= 3) { const invV = V.map(v => 1/v); document.getElementById('mar-r2').textContent = computeR2(invV, P).toFixed(4); }
+  if (valid.length >= 3) { const invV = valid.map(d => 1/d.v); const pV = valid.map(d => d.p); document.getElementById('mar-r2').textContent = computeR2(invV, pV).toFixed(4); }
 }
 function marRegression() {
   const V = state.marVolumes, P = state.marPressions;
   if (V.length < 3) { alert('Pas assez de points (minimum 3) !'); return; }
-  const pvVals = V.map((v, i) => v * P[i]);
+  const valid = V.map((v, i) => ({ v, p: P[i] })).filter(d => d.v > 0);
+  if (valid.length < 3) { alert('Pas assez de points valides (volumes > 0) !'); return; }
+  const pvVals = valid.map(d => d.v * d.p);
   const pvMoy  = pvVals.reduce((a, b) => a+b, 0) / pvVals.length;
-  const vMin = Math.min(...V), vMax = Math.max(...V) * 1.1;
+  const vMin = Math.min(...valid.map(d => d.v)), vMax = Math.max(...valid.map(d => d.v)) * 1.1;
   const vArr = Array.from({length: 200}, (_, i) => vMin + i*(vMax-vMin)/199);
   marChart1.data.datasets[1].data = vArr.map(v => ({ x: v, y: pvMoy/v }));
   marChart1.data.datasets[1].label = `P×V = ${pvMoy.toFixed(0)} kPa·cm³`; marChart1.update();
-  const invV = V.map(v => 1/v);
-  const { slope, intercept } = linearReg(invV, P);
-  const xArr = Array.from({length: 50}, (_, i) => 0.001 + i*0.001);
+  const invV = valid.map(d => 1/d.v), pV = valid.map(d => d.p);
+  const { slope, intercept } = linearReg(invV, pV);
+  // Plage 1/V adaptative basée sur les données réelles
+  const invVMin = Math.min(...invV) * 0.8, invVMax = Math.max(...invV) * 1.2;
+  const xArr = Array.from({length: 50}, (_, i) => invVMin + i*(invVMax-invVMin)/49);
   marChart2.data.datasets[1].data = xArr.map(x => ({ x, y: slope*x+intercept }));
   marChart2.data.datasets[1].label = `P = ${slope.toFixed(1)}/V + ${intercept.toFixed(1)}`; marChart2.update();
-  marLog('ok', `Courbes tracées — R²=${computeR2(invV, P).toFixed(4)} — P×V=${pvMoy.toFixed(1)} kPa·cm³`);
+  marLog('ok', `Courbes tracées — R²=${computeR2(invV, pV).toFixed(4)} — P×V=${pvMoy.toFixed(1)} kPa·cm³`);
 }
 function marCheckLinearity() {
   const V = state.marVolumes, P = state.marPressions;
   if (V.length < 3) { alert('Pas assez de points !'); return; }
-  const invV = V.map(v => 1/v);
-  const { slope, intercept } = linearReg(invV, P);
-  const r2 = computeR2(invV, P);
+  const valid = V.map((v, i) => ({ v, p: P[i] })).filter(d => d.v > 0);
+  if (valid.length < 3) { alert('Pas assez de points valides (volumes > 0) !'); return; }
+  const invV = valid.map(d => 1/d.v), pV = valid.map(d => d.p);
+  const { slope, intercept } = linearReg(invV, pV);
+  const r2 = computeR2(invV, pV);
   const verdict = r2 > 0.99 ? '✅ Excellente linéarité !\nLa loi de Mariotte est vérifiée.' : r2 > 0.95 ? '✅ Bonne linéarité.' : '⚠️ Linéarité moyenne.';
   marLog('info', `Linéarité : P = ${slope.toFixed(1)}×(1/V) + ${intercept.toFixed(1)}, R²=${r2.toFixed(4)}`);
   alert(`VÉRIFICATION DE LA LINÉARITÉ\n\nÉquation : P = ${slope.toFixed(1)} × (1/V) + ${intercept.toFixed(1)}\n\nR² = ${r2.toFixed(4)}\n\n${verdict}`);
 }
+
 function marNewSerie() {
   if (state.marVolumes.length > 0 && !confirm('Effacer les données ?')) return;
   state.marVolumes = []; state.marPressions = []; marSheet.formulas = {}; marSheet.selected = null;
@@ -1302,6 +1314,7 @@ function marSave() {
   const volMort = parseFloat(document.getElementById('mar-dead-vol').value) || 0;
   let csv = `Volume total (cm³);V seringue (cm³);V mort (cm³);Pression (kPa);Calcul\n`;
   state.marVolumes.forEach((v, i) => {
+    if (v <= 0) return; // ignore les lignes avec volume nul
     const p = state.marPressions[i];
     const vSer = (v - volMort).toFixed(2);
     const calc = i in marSheet.formulas ? marEvalFormula(marSheet.formulas[i], i) : '';
@@ -1567,7 +1580,11 @@ function tempFormulaBarCommit(){
   const fval=document.getElementById('temp-xl-fval');if(!fval)return;
   const ref=document.getElementById('temp-xl-ref');if(!ref)return;
   const raw=fval.value.trim();const col=ref.textContent.charAt(0).toUpperCase();const i=tempSheet.selected;
-  if(col==='C'){if(raw==='')delete tempSheet.formulas[i];else tempSheet.formulas[i]=raw;}
+  const row=state.tempCsvRows[i];if(!row)return;
+  if(col==='A'){const v=parseFloat(raw.replace(',','.'));if(!isNaN(v))row[0]=v.toFixed(4);}
+  else if(col==='B'){const v=parseFloat(raw.replace(',','.'));if(!isNaN(v))row[1]=v.toFixed(2);}
+  else if(col==='C'){const v=parseFloat(raw.replace(',','.'));if(!isNaN(v))row[2]=v.toFixed(2);}
+  else if(col==='D'){if(raw==='')delete tempSheet.formulas[i];else tempSheet.formulas[i]=raw;}
   tempRefreshSheet();
 }
 function tempEditCell(td,col,i){
@@ -1600,7 +1617,7 @@ function addLog(id, type, msg) {
   const t=`${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}:${now.getSeconds().toString().padStart(2,'0')}`;
   div.className='log-line '+(type||'');div.textContent=`[${t}] ${msg}`;box.appendChild(div);box.scrollTop=box.scrollHeight;
 }
-function downloadFile(content,filename,mime){const blob=new Blob([content],{type:mime});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=filename;a.click();URL.revokeObjectURL(url);}
+function downloadFile(content,filename,mime){const blob=new Blob([content],{type:mime});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 function timestamp(){const d=new Date();return`${d.getFullYear()}${(d.getMonth()+1).toString().padStart(2,'0')}${d.getDate().toString().padStart(2,'0')}_${d.getHours().toString().padStart(2,'0')}${d.getMinutes().toString().padStart(2,'0')}`;}
 function linearReg(x,y){const n=x.length,sumX=x.reduce((a,b)=>a+b,0),sumY=y.reduce((a,b)=>a+b,0),sumXY=x.reduce((acc,xi,i)=>acc+xi*y[i],0),sumX2=x.reduce((acc,xi)=>acc+xi*xi,0);const slope=(n*sumXY-sumX*sumY)/(n*sumX2-sumX*sumX),intercept=(sumY-slope*sumX)/n;return{slope,intercept};}
 function computeR2(x,y){const{slope,intercept}=linearReg(x,y),mean=y.reduce((a,b)=>a+b,0)/y.length,ssTot=y.reduce((acc,yi)=>acc+(yi-mean)**2,0),ssRes=y.reduce((acc,yi,i)=>acc+(yi-(slope*x[i]+intercept))**2,0);return 1-ssRes/ssTot;}
